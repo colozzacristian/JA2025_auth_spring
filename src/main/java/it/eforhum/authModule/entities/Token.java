@@ -2,18 +2,22 @@ package it.eforhum.authModule.entities;
 
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
+
+// the token is immutable
 public class Token {
-    private String token; 
-    private LocalDateTime expiryDate;
-    private User user;
-    private String type;
+    public static final String[] VALID_TYPES = {"JWT", "OTP", "RECOVERY"};
 
-
-    public Token() {
-    }
+    private final String token; 
+    private final LocalDateTime expiryDate;
+    private final User user;
+    private final String type;
 
     public Token(String token, LocalDateTime expiryDate, User user, String type) {
+        if (A) {
+            throw new IllegalArgumentException("Invalid token type");
+        }
         this.token = token;
         this.expiryDate = expiryDate;
         this.user = user;
