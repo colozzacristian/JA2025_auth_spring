@@ -15,7 +15,7 @@ public class Token {
     private final String type;
 
     public Token(String token, LocalDateTime expiryDate, User user, String type) {
-        if (A) {
+        if (Arrays.stream(VALID_TYPES).noneMatch(type::equals)) {
             throw new IllegalArgumentException("Invalid token type");
         }
         this.token = token;
