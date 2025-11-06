@@ -11,7 +11,7 @@ public class Token {
 
     private final String token; 
     private final LocalDateTime expiryDate;
-    private final User user;
+    private User user;
     private final String type;
 
     public Token(String token, LocalDateTime expiryDate, User user, String type) {
