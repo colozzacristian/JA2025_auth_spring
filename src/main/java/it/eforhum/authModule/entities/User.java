@@ -1,5 +1,80 @@
 package it.eforhum.authModule.entities;
 
-public class User {
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "users")
+public class User{
     
+    @Id
+    @Column(name = "UserID")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int UserId;
+
+    @Column(name = "Email" , nullable = false, unique=true)
+    private String Email;
+
+    @Column(name = "PasswordHash" ,nullable = false)
+    private String PasswordHash;
+
+    @Column(name = "Active")
+    private boolean Active;
+
+    @Column(name = "CreationDate", nullable=false)
+    private LocalDateTime CreationDate;
+
+    @Column(name = "LastAccessDate")
+    private LocalDateTime LastAccessDate;
+
+    public int getUserId() {
+        return UserId;
+    }
+
+    public String getEmail() {
+        return Email;
+    }
+
+    public void setEmail(String Email) {
+        this.Email = Email;
+    }
+
+    public String getPasswordHash() {
+        return PasswordHash;
+    }
+
+    public void setPasswordHash(String PasswordHash) {
+        this.PasswordHash = PasswordHash;
+    }
+
+    public boolean isActive() {
+        return Active;
+    }
+
+    public void setActive(boolean Active) {
+        this.Active = Active;
+    }
+
+    public LocalDateTime getCreationDate() {
+        return CreationDate;
+    }
+
+    public void setCreationDate(LocalDateTime CreationDate) {
+        this.CreationDate = CreationDate;
+    }
+
+    public LocalDateTime getLastAccessDate() {
+        return LastAccessDate;
+    }
+
+    public void setLastAccessDate(LocalDateTime LastAccessDate) {
+        this.LastAccessDate = LastAccessDate;
+    }
+
 }
