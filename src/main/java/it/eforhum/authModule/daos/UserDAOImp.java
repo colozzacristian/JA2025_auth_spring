@@ -55,7 +55,7 @@ public class UserDAOImp implements UserDAO {
 
         try(Session session = sessionFactory.openSession()){
 
-            Query<User> query = session.createQuery("From users",User.class);
+            Query<User> query = session.createQuery("From User",User.class);
 
             allUserList = query.list();
         }
@@ -70,7 +70,7 @@ public class UserDAOImp implements UserDAO {
 
         try(Session session = sessionFactory.openSession()){
 
-            Query<User> query = session.createQuery("From users WHERE users.Active = false",User.class);
+            Query<User> query = session.createQuery("FROM User u WHERE u.Active = false",User.class);
 
             inactiveUsers = query.list();           
         }catch(Exception e){
@@ -88,7 +88,7 @@ public class UserDAOImp implements UserDAO {
 
         try(Session session = sessionFactory.openSession()){
 
-            Query<User> query = session.createQuery("From users WHERE users.CreationDate = " + Timestamp.valueOf(creationDate) ,User.class);
+            Query<User> query = session.createQuery("FROM User u WHERE u.CreationDate = " + Timestamp.valueOf(creationDate) ,User.class);
             
             usersList = query.list();           
         }catch(Exception e){
@@ -104,7 +104,7 @@ public class UserDAOImp implements UserDAO {
 
         try(Session session = sessionFactory.openSession()){
 
-            Query<User> query = session.createQuery("From users WHERE users.LastAccessDate < " + Timestamp.valueOf(date),User.class);
+            Query<User> query = session.createQuery("FROM User u WHERE u.LastAccessDate < " + Timestamp.valueOf(date),User.class);
 
             usersList = query.list();           
         }catch(Exception e){
@@ -118,7 +118,7 @@ public class UserDAOImp implements UserDAO {
 
         try(Session session = sessionFactory.openSession()){
             
-            Query<User> query = session.createQuery("FROM users WHERE users.PasswordHash = " + password + " AND users.Email = " + email, User.class);
+            Query<User> query = session.createQuery("FROM User u WHERE u.PasswordHash = " + password + " AND u.Email = " + email, User.class);
             
             return true;
         }catch(Exception e){
