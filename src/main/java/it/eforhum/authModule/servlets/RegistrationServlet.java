@@ -1,4 +1,4 @@
-package it.eforhum.authModule.servlet;
+package it.eforhum.authModule.servlets;
 
 import java.io.IOException;
 
@@ -10,9 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import it.eforhum.authModule.daos.UserDAOImp;
 import it.eforhum.authModule.entities.User;
+import it.eforhum.authModule.utils.PasswordHash;
+import it.eforhum.authModule.utils.JWTUtils;
 
-@WebServlet(name="RegisterationServlet", urlPatterns="/token/register")
-public class RegisterationServlet extends HttpServlet{
+@WebServlet(name="RegistrationServlet", urlPatterns="/token/register")
+public class RegistrationServlet extends HttpServlet{
 
     UserDAOImp userDao = new UserDAOImp();
 
@@ -22,16 +24,16 @@ public class RegisterationServlet extends HttpServlet{
         response.setContentType("text/html;charset=UTF-8");
 
         String email = request.getParameter("Email");
-        String password = request.getParameter("Password");
+        String password = PasswordHash.crypt(request.getParameter("Password"));;
         String name = request.getParameter("FirstName");
         String surname = request.getParameter("LastName");
-
+        
         int id = userDao.create(email, password, name, surname);
 
         if(id != 0){
             response.setStatus(200);
             User u = userDao.getById(id);
-            request.setParameter("JWT_Token",jwtutils.generateJWT(u));
+            request.setParameter("JWT_Token", JWTUtils.generateJWT(u));
         }else{
             response.setStatus(400);
         }
