@@ -88,7 +88,7 @@ public class UserDAOImp implements UserDAO {
 
         try(Session session = sessionFactory.openSession()){
 
-            Query<User> query = session.createQuery("FROM User u WHERE u.CreationDate = " + Timestamp.valueOf(creationDate) ,User.class);
+            Query<User> query = session.createQuery("FROM User u WHERE u.CreationDate = " + creationDate,User.class);
             
             usersList = query.list();           
         }catch(Exception e){
@@ -104,7 +104,7 @@ public class UserDAOImp implements UserDAO {
 
         try(Session session = sessionFactory.openSession()){
 
-            Query<User> query = session.createQuery("FROM User u WHERE u.LastAccessDate < " + Timestamp.valueOf(date),User.class);
+            Query<User> query = session.createQuery("FROM User u WHERE u.LastAccessDate < " + date,User.class);
 
             usersList = query.list();           
         }catch(Exception e){

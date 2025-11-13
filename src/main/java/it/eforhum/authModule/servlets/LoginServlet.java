@@ -31,7 +31,7 @@ public class LoginServlet extends HttpServlet{
         if(id != 0){
             response.setStatus(200);
             User u = userDAO.getById(id);
-            request.setParameter("JWT_Token", JWTUtils.generateJWT(u));
+            request.setAttribute("JWT_Token", JWTUtils.generateJWT(u));
         }else{
             response.setStatus(401);
         }

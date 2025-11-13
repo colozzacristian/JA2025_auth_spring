@@ -33,7 +33,7 @@ public class RegistrationServlet extends HttpServlet{
         if(id != 0){
             response.setStatus(200);
             User u = userDao.getById(id);
-            request.setParameter("JWT_Token", JWTUtils.generateJWT(u));
+            request.setAttribute("JWT_Token", JWTUtils.generateJWT(u));
         }else{
             response.setStatus(400);
         }
