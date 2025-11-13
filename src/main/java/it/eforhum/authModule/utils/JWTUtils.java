@@ -6,7 +6,7 @@ import java.sql.Date;
 import javax.crypto.SecretKey;
 
 import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
-
+import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Jwts;
 import it.eforhum.authModule.entities.User;
 
@@ -16,8 +16,8 @@ public class JWTUtils {
     private static final SecretKey SECRET_KEY;
 
     static {
-
-        SECRET_KEY = hmacShaKeyFor(System.getenv("JWT_SECRET").getBytes());
+        
+        SECRET_KEY = hmacShaKeyFor(Dotenv.load().get("JWT_SECRET").getBytes());
     }
     
     public static String generateJWT(User user) {
