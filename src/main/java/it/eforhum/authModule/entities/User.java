@@ -24,6 +24,12 @@ public class User{
     @Column(name = "PasswordHash" ,nullable = false)
     private String PasswordHash;
 
+    @Column(name="FirstName")
+    private String FirstName;
+
+    @Column(name = "LastName")
+    private String LastName;
+
     @Column(name = "Active")
     private boolean Active;
 
@@ -97,6 +103,22 @@ public class User{
 
     public void setLastAccessDate(LocalDateTime LastAccessDate) {
         this.LastAccessDate = LastAccessDate;
+    }
+
+    public String getFirstName() {
+        return FirstName;
+    }
+
+    public void setFirstName(String FirstName) {
+        this.FirstName = FirstName;
+    }
+
+    public String getLastName() {
+        return LastName;
+    }
+
+    public void setLastName(String LastName) {
+        this.LastName = LastName;
     }
 
 }
