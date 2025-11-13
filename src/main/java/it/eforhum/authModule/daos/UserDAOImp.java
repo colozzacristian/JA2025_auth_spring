@@ -1,11 +1,11 @@
 package it.eforhum.authModule.daos;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import it.eforhum.authModule.entities.User;
@@ -55,7 +55,7 @@ public class UserDAOImp implements UserDAO {
 
         try(Session session = sessionFactory.openSession()){
 
-            Query<User> query = session.createQuery("From users",User.class);
+            Query<User> query = session.createQuery("From User",User.class);
 
             allUserList = query.list();
         }
@@ -70,7 +70,7 @@ public class UserDAOImp implements UserDAO {
 
         try(Session session = sessionFactory.openSession()){
 
-            Query<User> query = session.createQuery("From users WHERE users.Active = false",User.class);
+            Query<User> query = session.createQuery("From User u WHERE u.Active = false",User.class);
 
             inactiveUsers = query.list();           
         }catch(Exception e){
@@ -88,7 +88,7 @@ public class UserDAOImp implements UserDAO {
 
         try(Session session = sessionFactory.openSession()){
 
-            Query<User> query = session.createQuery("From users WHERE users.CreationDate = " + Timestamp.valueOf(creationDate) ,User.class);
+            Query<User> query = session.createQuery("From User u WHERE u.CreationDate = " + creationDate ,User.class);
             
             usersList = query.list();           
         }catch(Exception e){
@@ -104,7 +104,7 @@ public class UserDAOImp implements UserDAO {
 
         try(Session session = sessionFactory.openSession()){
 
-            Query<User> query = session.createQuery("From users WHERE users.LastAccessDate < " + Timestamp.valueOf(date),User.class);
+            Query<User> query = session.createQuery("From User u WHERE u.LastAccessDate < " + date,User.class);
 
             usersList = query.list();           
         }catch(Exception e){
@@ -114,19 +114,40 @@ public class UserDAOImp implements UserDAO {
     }
     
     @Override
-    public boolean login(String email,String password){
+    public int login(String email,String password){
 
+        int id = 0;
         try(Session session = sessionFactory.openSession()){
             
-            Query<User> query = session.createQuery("FROM users WHERE users.PasswordHash = " + password + " AND users.Email = " + email, User.class);
+            Query<User> query = session.createQuery("FROM User u WHERE u.PasswordHash = " + password + " AND u.Email = " + email, User.class);
+
+            List<User> userData = query.list();
             
-            return true;
+            if(userData != null){
+                id = userData.get(0).getUserId();
+                return id;
+            }
+            
         }catch(Exception e){
             e.printStackTrace();
         }
 
-        return false;
+        return id;
 
+    }
+
+    public int create(String email, String password, String name, String surname){
+        
+        try(Session session = sessionFactory.openSession()){
+           Transaction tr = session.beginTransaction();
+           User u = new User(email, password, name, surname, false, LocalDateTime.now(), LocalDateTime.now());
+           session.persist(u);
+            
+           return u.getUserId();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return 0;
     }
     
 }

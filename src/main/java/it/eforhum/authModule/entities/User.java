@@ -33,6 +33,28 @@ public class User{
     @Column(name = "LastAccessDate")
     private LocalDateTime LastAccessDate;
 
+    public User(String email, String passwordHash, String firstName, String lastName, boolean active, LocalDateTime creationDate, LocalDateTime lastAccess){
+        this.Email = email;
+        this.PasswordHash = passwordHash;
+        this.FirstName = firstName;
+        this.LastName = lastName;
+        this.Active = active;
+        this.CreationDate = creationDate;
+        this.LastAccessDate = lastAccess;
+    }
+
+    public User(int id,String email, String passwordHash, String firstName, String lastName, boolean active, LocalDateTime creationDate, LocalDateTime lastAccess){
+        this.UserId = id;
+        this.Email = email;
+        this.PasswordHash = passwordHash;
+        this.FirstName = firstName;
+        this.LastName = lastName;
+        this.Active = active;
+        this.CreationDate = creationDate;
+        this.LastAccessDate = lastAccess;
+    }  
+
+
     public int getUserId() {
         return UserId;
     }
