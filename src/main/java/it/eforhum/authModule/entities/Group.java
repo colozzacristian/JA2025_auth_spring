@@ -8,15 +8,13 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
 
 @Entity
 //ricorda che SQL E' case sentitive anche per i nomi delle table
-@Table(name ="groups")
+@Table(name ="`groups`")
 public class Group {
 
     @Id
@@ -24,16 +22,11 @@ public class Group {
     @Column(name = "GroupID")
     private int GroupID;
 
-    @Column(name = "Name", length = 50, nullable = false, unique = true)
+    @Column(name = "GroupName", length = 50, nullable = false, unique = true)
     private String Name;
 
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "users",
-        joinColumns = @JoinColumn(name = "GroupID"),
-        inverseJoinColumns = @JoinColumn(name = "UserID")
-    )
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "groups")
     private Set<User> users;
 
     public Group(){}

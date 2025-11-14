@@ -1,14 +1,14 @@
 package it.eforhum.authModule.utils;
 
-import java.time.LocalDate;
 import java.sql.Date;
+import java.time.LocalDate;
 
 import javax.crypto.SecretKey;
 
-import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Jwts;
-
+import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
+import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
 
 public class JWTUtils {
@@ -21,7 +21,7 @@ public class JWTUtils {
         SECRET_KEY = hmacShaKeyFor(Dotenv.load().get("JWT_SECRET").getBytes());
     }
     
-    public static String generateJWT(User user) {
+    public static Token generateJWT(User user) {
 
         if (! user.isActive()) {
             throw new IllegalArgumentException("Cannot generate JWT for inactive user");
@@ -43,6 +43,6 @@ public class JWTUtils {
         .signWith(SECRET_KEY)
         .compact();
 
-        return jws;
+        return new Token(jws, expiration.toLocalDate(), user, "JWT");
     }
 }

@@ -15,3 +15,15 @@ CREATE TABLE users (
 );
 
 
+CREATE TABLE `groups` (
+    GroupID INT AUTO_INCREMENT PRIMARY KEY,
+    GroupName VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE UserGroups (
+    UserID INT,
+    GroupID INT,
+    PRIMARY KEY (UserID, GroupID),
+    FOREIGN KEY (UserID) REFERENCES users(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (GroupID) REFERENCES `groups`(GroupID)
+);

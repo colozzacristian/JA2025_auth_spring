@@ -29,14 +29,14 @@ public class JWTUtilsTest {
 	@Test
 	public void generateJWT_activeUser_shouldContainClaims() throws Exception {
 		List<String> groups = List.of("ADMIN","USER");
-		String token = JWTUtils.generateJWT(testUser);
+	    Token token = JWTUtils.generateJWT(testUser);
 		List<String> groupsJWT = null;
 		
 		
 		assertNotNull("Token should not be null", token);
 		
 		Claims claims = Jwts.parser().verifyWith(SECRET_KEY).build()
-                .parseSignedClaims(token)
+                .parseSignedClaims(token.getToken())
                 .getPayload();
 
 		assertEquals(testUser.getEmail(), claims.get("email"));

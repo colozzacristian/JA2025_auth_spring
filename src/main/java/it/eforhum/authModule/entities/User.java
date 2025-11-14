@@ -45,11 +45,11 @@ public class User{
     @Column(name = "LastAccessDate")
     private LocalDateTime LastAccessDate;
 
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "users")
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-        name = "groups",
-        joinColumns = @JoinColumn(name = "UserID"),
-        inverseJoinColumns = @JoinColumn(name = "GroupID")
+        name = "UserGroups",
+        joinColumns = {@JoinColumn(name = "UserID")},
+        inverseJoinColumns = {@JoinColumn(name = "GroupID")}
     )
     private Set<Group> groups;
 
@@ -147,6 +147,9 @@ public class User{
     }
 
     public String[] getGroupsForJWT() {
+        if (groups == null) {
+            return new String[0];
+        }
         return groups.stream().map(Group::getName).toArray(String[]::new);
     }
 

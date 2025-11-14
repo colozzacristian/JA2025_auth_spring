@@ -23,7 +23,9 @@ public class UserDAOImp implements UserDAO {
 
         try(Session session = sessionFactory.openSession()){
 
-            u = session.get(User.class,email);
+            u = session.createQuery("FROM User u WHERE u.Email = :email", User.class)
+                       .setParameter("email", email)
+                       .uniqueResult();
 
         }catch(Exception e){
             e.printStackTrace();
@@ -136,18 +138,19 @@ public class UserDAOImp implements UserDAO {
 
     }
 
-    public int create(String email, String password, String name, String surname){
-        
+    public User create(String email, String password, String name, String surname){
+        User u = null;
         try(Session session = sessionFactory.openSession()){
            Transaction tr = session.beginTransaction();
-           User u = new User(email, password, name, surname, false, LocalDateTime.now(), LocalDateTime.now());
+           u = new User(email, password, name, surname, true, LocalDateTime.now(), null);
            session.persist(u);
+              
+            tr.commit();
             
-           return u.getUserId();
         }catch(Exception e){
             e.printStackTrace();
         }
-        return 0;
+        return u;
     }
     
 }
