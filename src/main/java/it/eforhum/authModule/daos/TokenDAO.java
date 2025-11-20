@@ -36,8 +36,8 @@ public class TokenDAO {
     }
 
     public boolean isTokenValid(String email, String tokenStr) {
-         Token token = token_map.get(email);
-         return token != null && token.getToken().equals(tokenStr) && !token.isExpired();
+        Token token = token_map.get(email);
+        return token != null && token.getToken().equals(tokenStr) && !token.isExpired();
     }
 
 

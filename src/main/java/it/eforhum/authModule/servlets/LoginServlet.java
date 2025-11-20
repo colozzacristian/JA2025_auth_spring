@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import it.eforhum.authModule.daos.TokenDAO;
 import it.eforhum.authModule.daos.UserDAOImp;
 import it.eforhum.authModule.dtos.JWTResponseDTO;
 import it.eforhum.authModule.dtos.LoginDTO;
@@ -17,16 +18,20 @@ import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
 import it.eforhum.authModule.utils.JWTUtils;
 import it.eforhum.authModule.utils.PasswordHash;
+import it.eforhum.authModule.utils.TokenStore;
 
 @WebServlet(name="LoginServlet", urlPatterns = "/token/auth")
 public class LoginServlet extends HttpServlet{
 	
     UserDAOImp userDAO = new UserDAOImp();
 
+    TokenStore tokenStore = TokenStore.getInstance();
+    
+
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
-		//application json
+		
         response.setContentType("application/json");
         
 		ObjectMapper mapper = new ObjectMapper();
@@ -40,17 +45,17 @@ public class LoginServlet extends HttpServlet{
 
         User u = userDAO.login(email, password);
 
-        
         if(u != null){
 
             response.setStatus(200);
-            Token t = JWTUtils.generateJWT(u);
-            response.getWriter().write(mapper.writeValueAsString(new JWTResponseDTO(t.getToken())));
             
+            Token t = JWTUtils.generateJWT(u);
+            tokenStore.getJwtToken().saveToken(t);
+            
+            response.getWriter().write(mapper.writeValueAsString(new JWTResponseDTO(t.getToken())));
 
         }else{
-            response.setStatus(401); // unathorized
-            System.out.println("dati: " + u.getUserId() + " " + u.getEmail());
+            response.setStatus(401);
         }
         
     }
