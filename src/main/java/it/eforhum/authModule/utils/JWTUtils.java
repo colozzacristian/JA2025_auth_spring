@@ -45,4 +45,22 @@ public class JWTUtils {
 
         return new Token(jws, expiration.toLocalDate(), user, "JWT");
     }
+
+
+    public static String getEmailFromToken(String token) {
+        return Jwts.parser().verifyWith(SECRET_KEY).build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("email", String.class);
+    }
+
+    public static boolean isTokenSignatureValid(String token) {
+        try {
+            Jwts.parser().verifyWith(SECRET_KEY).build()
+                .parseSignedClaims(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }
