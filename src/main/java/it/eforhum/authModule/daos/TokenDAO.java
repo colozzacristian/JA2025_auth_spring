@@ -39,7 +39,6 @@ public class TokenDAO {
         Token token = token_map.get(email);
         return token != null && token.getToken().equals(tokenStr) && !token.isExpired();
     }
-
-
+    
     
 }
