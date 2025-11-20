@@ -15,6 +15,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 import it.eforhum.authModule.entities.Group;
+import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
 import it.eforhum.authModule.utils.JWTUtils;
 

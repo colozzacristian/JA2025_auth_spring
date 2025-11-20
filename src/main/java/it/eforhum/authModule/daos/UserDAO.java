@@ -20,5 +20,5 @@ public interface UserDAO {
 
     public abstract List<User> getLastActiveBeforeDate(LocalDateTime date);
 
-    public abstract int login(String email, String password);
+    public abstract User login(String email, String password);
 }

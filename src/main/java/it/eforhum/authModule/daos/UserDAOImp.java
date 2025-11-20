@@ -116,25 +116,28 @@ public class UserDAOImp implements UserDAO {
     }
     
     @Override
-    public int login(String email,String password){
+    public User login(String email,String password){
 
-        int id = 0;
+        User u = null;
         try(Session session = sessionFactory.openSession()){
             
-            Query<User> query = session.createQuery("FROM User u WHERE u.PasswordHash = " + password + " AND u.Email = " + email, User.class);
-
-            List<User> userData = query.list();
+            u = session.createQuery("FROM User u WHERE u.Email = :email AND u.PasswordHash = :password", User.class)
+                    .setParameter("email", email)
+                    .setParameter("password",password) 
+                    .uniqueResult();
             
-            if(userData != null){
-                id = userData.get(0).getUserId();
-                return id;
+
+            if(u != null){
+                u.setLastAccessDate(LocalDateTime.now());
+                Transaction tr = session.beginTransaction();
+                tr.commit();
             }
             
         }catch(Exception e){
             e.printStackTrace();
         }
 
-        return id;
+        return u;
 
     }
 

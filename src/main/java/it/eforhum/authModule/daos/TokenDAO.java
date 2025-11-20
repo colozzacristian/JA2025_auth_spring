@@ -1,10 +1,10 @@
 package it.eforhum.authModule.daos;
 
-import it.eforhum.authModule.entities.Token;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import it.eforhum.authModule.entities.Token;
 
 public class TokenDAO {
 

@@ -5,7 +5,8 @@
 <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/projectWork</property>
 <property name="hibernate.connection.username">root</property>
 <property name="hibernate.connection.password">4nt4n1</property>
-
+<!--  Configurazione del dialetto SQL  -->
+<property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
 <!--  Mostra le query SQL generate  -->
 <property name="hibernate.show_sql">false</property>
 <property name="hibernate.format_sql">true</property>

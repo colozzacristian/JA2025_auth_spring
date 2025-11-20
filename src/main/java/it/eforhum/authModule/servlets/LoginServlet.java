@@ -8,10 +8,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import it.eforhum.authModule.daos.UserDAOImp;
+import it.eforhum.authModule.dtos.JWTResponseDTO;
+import it.eforhum.authModule.dtos.LoginDTO;
+import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
-import it.eforhum.authModule.utils.PasswordHash;
 import it.eforhum.authModule.utils.JWTUtils;
+import it.eforhum.authModule.utils.PasswordHash;
 
 @WebServlet(name="LoginServlet", urlPatterns = "/token/auth")
 public class LoginServlet extends HttpServlet{
@@ -21,19 +26,31 @@ public class LoginServlet extends HttpServlet{
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
-		response.setContentType("text/html;charset=UTF-8");
-		
-        String email = request.getParameter("Email");
-        String password = PasswordHash.crypt(request.getParameter("Password"));
+		//application json
+        response.setContentType("text/html;charset=UTF-8");
+        
+		ObjectMapper mapper = new ObjectMapper();
+        
+        String body = new String(request.getInputStream().readAllBytes());
+        LoginDTO loginDTO = mapper.readValue(body, LoginDTO.class);
 
-        int id = userDAO.login(email, password);
+        String email = loginDTO.email();
+        
+        String password = PasswordHash.crypt(loginDTO.password());
 
-        if(id != 0){
+        User u = userDAO.login(email, password);
+
+        
+        if(u != null){
+
             response.setStatus(200);
-            User u = userDAO.getById(id);
-            request.setAttribute("JWT_Token", JWTUtils.generateJWT(u));
+            Token t = JWTUtils.generateJWT(u);
+            response.getWriter().write(mapper.writeValueAsString(new JWTResponseDTO(t.getToken())));
+            
+
         }else{
-            response.setStatus(401);
+            response.setStatus(401); // unathorized
+            System.out.println("dati: " + u.getUserId() + " " + u.getEmail());
         }
         
     }
