@@ -27,7 +27,7 @@ public class LoginServlet extends HttpServlet{
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
 		//application json
-        response.setContentType("text/html;charset=UTF-8");
+        response.setContentType("application/json");
         
 		ObjectMapper mapper = new ObjectMapper();
         
