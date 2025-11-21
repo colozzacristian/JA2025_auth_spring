@@ -2,6 +2,7 @@ package it.eforhum.authModule.utils;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import javax.crypto.SecretKey;
 
@@ -13,7 +14,7 @@ import it.eforhum.authModule.entities.User;
 
 public class JWTUtils {
 
-    public static final int TOKEN_EXPIRATION = 30;
+    public static final int TOKEN_EXPIRATION = Integer.parseInt(Dotenv.load().get("token_expiration"));
     private static final SecretKey SECRET_KEY;
 
     static {
@@ -28,7 +29,7 @@ public class JWTUtils {
         }
 
         Date now = Date.valueOf(LocalDate.now());
-        Date expiration = Date.valueOf(LocalDate.now().plusDays(TOKEN_EXPIRATION));
+        LocalDateTime expiration = LocalDateTime.now().plusSeconds(TOKEN_EXPIRATION);
         String[]roles = {"USER","ADMIN"};
 
         
@@ -39,11 +40,10 @@ public class JWTUtils {
             .claim("userId", user.getUserId())
             .claim("groups", user.getGroupsForJWT())
             .setIssuedAt(now)           // Even if they are deprecated i must keep them for now
-            .setExpiration(expiration)  // It seems that in this version it is not yet fully replaced
         .signWith(SECRET_KEY)
         .compact();
 
-        return new Token(jws, expiration.toLocalDate(), user, "JWT");
+        return new Token(jws, expiration, user, "JWT");
     }
 
 
