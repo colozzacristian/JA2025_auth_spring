@@ -2,6 +2,7 @@ package it.eforhum.authModule.entities;
 
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 
@@ -11,11 +12,11 @@ public class Token {
 
     private final String token; 
 
-    private final LocalDate expiryDate;
+    private final LocalDateTime expiryDate;
     private User user;
     private final String type;
 
-    public Token(String token, LocalDate expiryDate, User user, String type) {
+    public Token(String token, LocalDateTime expiryDate, User user, String type) {
         if (Arrays.stream(VALID_TYPES).noneMatch(type::equals)) {
             throw new IllegalArgumentException("Invalid token type");
             
@@ -30,7 +31,7 @@ public class Token {
         return token;
     }
 
-    public LocalDate getExpiryDate() {
+    public LocalDateTime getExpiryDate() {
         return expiryDate;
     }
 
@@ -45,7 +46,12 @@ public class Token {
     }
 
     public boolean isExpired() {
-        return LocalDate.now().isAfter(expiryDate);
+        return LocalDateTime.now().isAfter(expiryDate);
+    }
+
+    public LocalDateTime extendExpiry(int seconds) {
+        this.expiryDate.plusSeconds(seconds);
+        return this.expiryDate;
     }
 
 
