@@ -2,15 +2,8 @@ package it.eforhum.authModule.servlets;
 
 import java.io.IOException;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import it.eforhum.authModule.daos.TokenDAO;
 import it.eforhum.authModule.daos.UserDAOImp;
 import it.eforhum.authModule.dtos.JWTResponseDTO;
 import it.eforhum.authModule.dtos.LoginDTO;
@@ -19,6 +12,11 @@ import it.eforhum.authModule.entities.User;
 import it.eforhum.authModule.utils.JWTUtils;
 import it.eforhum.authModule.utils.PasswordHash;
 import it.eforhum.authModule.utils.TokenStore;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet(name="LoginServlet", urlPatterns = "/token/auth")
 public class LoginServlet extends HttpServlet{
@@ -51,9 +49,9 @@ public class LoginServlet extends HttpServlet{
             
             Token t = JWTUtils.generateJWT(u);
             tokenStore.getJwtToken().saveToken(t);
-            
-            response.getWriter().write(mapper.writeValueAsString(new JWTResponseDTO(t.getToken())));
 
+            response.getWriter().write(mapper.writeValueAsString(new JWTResponseDTO(t.getToken())));
+            
         }else{
             response.setStatus(401);
         }
