@@ -51,8 +51,7 @@ public class GroupsCheckServlet extends HttpServlet{
         }
 
         groups = List.of(userDAO.getByEmail(userEmail).getGroupsForJWT());
-
-        if(request.getParameter("g") == null || groupsToCheck.length == 0 ) {
+        if(request.getParameter("g") == null) {
             response.setStatus(200);
             response.setContentType("application/json");
             objectMapper.writeValue(response.getWriter(), new GroupsDTO(groups.toArray(new String[0])));
@@ -63,8 +62,8 @@ public class GroupsCheckServlet extends HttpServlet{
 
         for(String g : groupsToCheck) {
             if(g.isBlank() || !groups.contains(g)) {
-                response.setStatus(400);
-                return;
+                isInGroups = false;
+                break;
             }
             
         }
