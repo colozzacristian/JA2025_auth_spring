@@ -5,8 +5,8 @@ import java.io.IOException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.eforhum.authModule.daos.UserDAOImp;
-import it.eforhum.authModule.dtos.JWTResponseDTO;
-import it.eforhum.authModule.dtos.LoginDTO;
+import it.eforhum.authModule.dtos.JWTRespDTO;
+import it.eforhum.authModule.dtos.LoginReqDTO;
 import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
 import it.eforhum.authModule.utils.JWTUtils;
@@ -35,7 +35,7 @@ public class LoginServlet extends HttpServlet{
 		ObjectMapper mapper = new ObjectMapper();
         
         String body = new String(request.getInputStream().readAllBytes());
-        LoginDTO loginDTO = mapper.readValue(body, LoginDTO.class);
+        LoginReqDTO loginDTO = mapper.readValue(body, LoginReqDTO.class);
 
         String email = loginDTO.email();
         
@@ -50,7 +50,7 @@ public class LoginServlet extends HttpServlet{
             Token t = JWTUtils.generateJWT(u);
             tokenStore.getJwtToken().saveToken(t);
 
-            response.getWriter().write(mapper.writeValueAsString(new JWTResponseDTO(t.getToken())));
+            response.getWriter().write(mapper.writeValueAsString(new JWTRespDTO(t.getToken())));
             
         }else{
             response.setStatus(401);

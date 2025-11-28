@@ -40,5 +40,12 @@ public class TokenDAO {
         return token != null && token.getToken().equals(tokenStr) && !token.isExpired();
     }
     
+    public boolean isTokenValid(String tokenStr) {
+        Token token = token_map.values().stream()
+                .filter(t -> t.getToken().equals(tokenStr))
+                .findFirst()
+                .orElse(null);
+        return token != null && token.getToken().equals(tokenStr) && !token.isExpired();
+    }
     
 }

@@ -10,11 +10,12 @@ import org.hibernate.query.Query;
 
 import it.eforhum.authModule.entities.User;
 import it.eforhum.authModule.utils.HibernateUtil;
+import it.eforhum.authModule.utils.PasswordHash;
 
 
 public class UserDAOImp implements UserDAO {
 
-    SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+    private static final SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
 
     @Override
     public User getByEmail(String email){
@@ -154,6 +155,17 @@ public class UserDAOImp implements UserDAO {
             e.printStackTrace();
         }
         return u;
+    }
+
+    public void changePassword(User u, String newPassword){
+        try(Session session = sessionFactory.openSession()){
+            Transaction tr = session.beginTransaction();
+            u.setPasswordHash(PasswordHash.crypt(newPassword));
+            session.merge(u);
+            tr.commit();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
     
 }

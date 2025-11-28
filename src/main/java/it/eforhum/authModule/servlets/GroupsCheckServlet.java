@@ -6,8 +6,8 @@ import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.eforhum.authModule.daos.UserDAOImp;
-import it.eforhum.authModule.dtos.GroupsDTO;
-import it.eforhum.authModule.dtos.GroupsParamDTO;
+import it.eforhum.authModule.dtos.GroupsListRespDTO;
+import it.eforhum.authModule.dtos.InGroupsRespDTO;
 import it.eforhum.authModule.utils.JWTUtils;
 import it.eforhum.authModule.utils.TokenStore;
 import jakarta.servlet.ServletException;
@@ -54,7 +54,7 @@ public class GroupsCheckServlet extends HttpServlet{
         if(request.getParameter("g") == null) {
             response.setStatus(200);
             response.setContentType("application/json");
-            objectMapper.writeValue(response.getWriter(), new GroupsDTO(groups.toArray(new String[0])));
+            objectMapper.writeValue(response.getWriter(), new GroupsListRespDTO(groups.toArray(new String[0])));
             return;
         }
 
@@ -69,6 +69,6 @@ public class GroupsCheckServlet extends HttpServlet{
         }
         response.setStatus(200);
         response.setContentType("application/json");
-        objectMapper.writeValue(response.getWriter(), new GroupsParamDTO(isInGroups));
+        objectMapper.writeValue(response.getWriter(), new InGroupsRespDTO(isInGroups));
     }
 }

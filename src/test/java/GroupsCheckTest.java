@@ -1,22 +1,23 @@
 
 
-import org.junit.Test;
-import org.junit.Before;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.eforhum.authModule.daos.UserDAOImp;
-import it.eforhum.authModule.entities.User;
+import it.eforhum.authModule.dtos.GroupsListRespDTO;
+import it.eforhum.authModule.dtos.InGroupsRespDTO;
 import it.eforhum.authModule.entities.Token;
+import it.eforhum.authModule.entities.User;
 import it.eforhum.authModule.servlets.GroupsCheckServlet;
 import it.eforhum.authModule.utils.JWTUtils;
 import it.eforhum.authModule.utils.TokenStore;
-import it.eforhum.authModule.dtos.GroupsDTO;
-import it.eforhum.authModule.dtos.GroupsParamDTO;
 
 
 
@@ -54,7 +55,7 @@ public class GroupsCheckTest {
         assertEquals(response.getStatus(), 200);
 
         try {
-            assertEquals(response.getContentAsString(), objectMapper.writeValueAsString(new GroupsDTO(expectedGroups)));
+            assertEquals(response.getContentAsString(), objectMapper.writeValueAsString(new GroupsListRespDTO(expectedGroups)));
         } catch (Exception e) {
         }
 
@@ -101,7 +102,7 @@ public class GroupsCheckTest {
 
         assertEquals(response.getStatus(), 200);
         try {
-            assertEquals(response.getContentAsString(), objectMapper.writeValueAsString(new GroupsParamDTO(false)));
+            assertEquals(response.getContentAsString(), objectMapper.writeValueAsString(new InGroupsRespDTO(false)));
         } catch (Exception e) {
         }
     }
