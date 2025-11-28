@@ -6,6 +6,7 @@ WORKDIR /build
 # Copy the pom.xml and source code
 COPY pom.xml .
 COPY src ./src
+COPY .env .
 
 # Build the application
 RUN mvn clean package -DskipTests
@@ -26,19 +27,10 @@ RUN apt-get update && \
 COPY --from=builder /build/target/authModule.war /app/authModule.war
 
 # Expose the default port for the application
-EXPOSE 8080
-
-# Set environment variables for database connection (these can be overridden at runtime)
-ENV DB_HOST=mysql \
-    DB_PORT=3306 \
-    DB_NAME=projectWork \
-    DB_USER=root \
-    DB_PASSWORD=4nt4n1 \
-    JWT_SECRET_KEY=your-secret-key-here
+EXPOSE 8081
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8080/authModule || exit 1
-
+    CMD curl -f http://localhost:8081/authModule || exit 1
 # Run the application with Jetty
 CMD ["java", "-jar", "/app/authModule.war"]

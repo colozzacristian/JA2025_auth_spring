@@ -1,21 +1,21 @@
 package it.eforhum.authModule.servlets;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.eforhum.authModule.daos.UserDAOImp;
+import it.eforhum.authModule.dtos.RecoveryAuthReqDTO;
+import it.eforhum.authModule.dtos.TempTokenRespDTO;
+import it.eforhum.authModule.entities.Token;
+import it.eforhum.authModule.entities.User;
+import it.eforhum.authModule.utils.JWTUtils;
+import it.eforhum.authModule.utils.TokenStore;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.ServletException;
-import java.io.IOException;
-
-import it.eforhum.authModule.dtos.RecoveryAuthReqDTO;
-import it.eforhum.authModule.utils.TokenStore;
-import it.eforhum.authModule.daos.UserDAOImp;
-import it.eforhum.authModule.entities.User;
-import it.eforhum.authModule.entities.Token;
-import it.eforhum.authModule.utils.JWTUtils;
-import it.eforhum.authModule.dtos.TempTokenRespDTO;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebServlet("/recovery/auth")
 public class PasswordRecoveryAuthServlet extends HttpServlet{ 

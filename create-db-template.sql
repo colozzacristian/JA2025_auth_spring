@@ -4,7 +4,8 @@ CREATE DATABASE projectWork
 USE projectWork;
 
 CREATE TABLE users (
-    UserID INT AUTO_INCREMENT PRIMARY KEY,
+    
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     Email VARCHAR(255) NOT NULL UNIQUE,
     PasswordHash VARCHAR(255) NOT NULL,
     FirstName VARCHAR(50) NOT NULL,
@@ -16,14 +17,14 @@ CREATE TABLE users (
 
 
 CREATE TABLE `groups` (
-    GroupID INT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     GroupName VARCHAR(100) NOT NULL UNIQUE
 );
 
 CREATE TABLE UserGroups (
-    UserID INT,
-    GroupID INT,
-    PRIMARY KEY (UserID, GroupID),
-    FOREIGN KEY (UserID) REFERENCES users(UserID) ON DELETE CASCADE,
-    FOREIGN KEY (GroupID) REFERENCES `groups`(GroupID)
+    user_id BIGINT,
+    group_id BIGINT,
+    PRIMARY KEY (user_id, group_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES `groups`(id)
 );

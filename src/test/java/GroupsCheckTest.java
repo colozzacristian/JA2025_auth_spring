@@ -33,7 +33,7 @@ public class GroupsCheckTest {
 
     @Before
     public void setUp() {
-        User User = userDAO.getByEmail("a");
+        User User = userDAO.getByEmail("a@a.a");
         jwtToken = JWTUtils.generateJWT(User);
         tokenStore.getJwtToken().saveToken(jwtToken);
         expectedGroups =User.getGroupsForJWT();

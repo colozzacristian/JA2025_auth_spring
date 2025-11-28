@@ -20,9 +20,9 @@ import jakarta.persistence.Table;
 public class User{
     
     @Id
-    @Column(name = "UserID")
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int UserId;
+    private Long UserId;
 
     @Column(name = "Email" , nullable = false, unique=true)
     private String Email;
@@ -48,8 +48,8 @@ public class User{
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "UserGroups",
-        joinColumns = {@JoinColumn(name = "UserID")},
-        inverseJoinColumns = {@JoinColumn(name = "GroupID")}
+        joinColumns = {@JoinColumn(name = "user_id")},
+        inverseJoinColumns = {@JoinColumn(name = "group_id")}
     )
     private Set<Group> groups;
 
@@ -66,7 +66,7 @@ public class User{
         this.LastAccessDate = lastAccess;
     }
 
-    public User(int id,String email, String passwordHash, String firstName, String lastName, boolean active, LocalDateTime creationDate, LocalDateTime lastAccess){
+    public User(Long id,String email, String passwordHash, String firstName, String lastName, boolean active, LocalDateTime creationDate, LocalDateTime lastAccess){
         this.UserId = id;
         this.Email = email;
         this.PasswordHash = passwordHash;
@@ -78,7 +78,7 @@ public class User{
     }  
 
 
-    public int getUserId() {
+    public Long getUserId() {
         return UserId;
     }
 

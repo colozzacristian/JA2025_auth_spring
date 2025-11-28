@@ -19,8 +19,8 @@ public class Group {
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
-    @Column(name = "GroupID")
-    private int GroupID;
+    @Column(name = "id")
+    private Long GroupID;
 
     @Column(name = "GroupName", length = 50, nullable = false, unique = true)
     private String Name;
@@ -31,17 +31,17 @@ public class Group {
 
     public Group(){}
 
-    public Group(int id, String name){
+    public Group(Long id, String name){
         this.GroupID = id;
         this.Name = name;
     }
 
 
-    public int getGroupID() {
+    public Long getGroupID() {
         return GroupID;
     }
 
-    public void setGroupID(int GroupID) {
+    public void setGroupID(Long GroupID) {
         this.GroupID = GroupID;
     }
 

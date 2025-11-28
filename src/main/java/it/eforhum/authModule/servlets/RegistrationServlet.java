@@ -2,21 +2,20 @@ package it.eforhum.authModule.servlets;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.eforhum.authModule.daos.UserDAOImp;
+import it.eforhum.authModule.dtos.JWTRespDTO;
+import it.eforhum.authModule.dtos.RegistrationDTOReq;
+import it.eforhum.authModule.entities.Token;
+import it.eforhum.authModule.entities.User;
+import it.eforhum.authModule.utils.JWTUtils;
+import it.eforhum.authModule.utils.PasswordHash;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import it.eforhum.authModule.daos.UserDAOImp;
-import it.eforhum.authModule.dtos.JWTResponseDTO;
-import it.eforhum.authModule.dtos.RegistrationDTO;
-import it.eforhum.authModule.entities.Token;
-import it.eforhum.authModule.entities.User;
-import it.eforhum.authModule.utils.JWTUtils;
-import it.eforhum.authModule.utils.PasswordHash;
 @WebServlet(name="RegistrationServlet", urlPatterns="/token/register")
 public class RegistrationServlet extends HttpServlet{
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -27,7 +26,7 @@ public class RegistrationServlet extends HttpServlet{
     throws ServletException, IOException{
         response.setContentType("text/html;charset=UTF-8");
         String body = new String(request.getInputStream().readAllBytes());
-        RegistrationDTO registrationDTO = objectMapper.readValue(body, RegistrationDTO.class);
+        RegistrationDTOReq registrationDTO = objectMapper.readValue(body, RegistrationDTOReq.class);
 
         String email = registrationDTO.email();
         String password = PasswordHash.crypt(registrationDTO.password());
@@ -45,7 +44,7 @@ public class RegistrationServlet extends HttpServlet{
         if(user != null){
             response.setStatus(200);
             Token t = JWTUtils.generateJWT(user);
-            response.getWriter().write(objectMapper.writeValueAsString(new JWTResponseDTO(t.getToken())));
+            response.getWriter().write(objectMapper.writeValueAsString(new JWTRespDTO(t.getToken())));
         }else{
             response.setStatus(400);
         }
