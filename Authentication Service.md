@@ -9,11 +9,13 @@ title: Authentication Service
 
 2. [APIs](##APIs)
     - [Registration](###Register)
+    - [Request activation code](###Request_activation_code)
     - [Activation](###Activate)
     - [Login (get token)](###Get_token_(Login))
+    - [Logout](###Logout)
     - [Token validation](###Token_Validation)
     - [Group Check](###Group_Check)
-    - [Password recovery](###Password_recovery)
+    - [Password recovery](###Request_password_recovery)
     - [Verify password recovery](###Verify_password_recovery)
     - [Change password](###Change_password)
 
@@ -36,23 +38,41 @@ response.addHeader("Authorization", theToken)
 ```json
 {
     email: "Email"
-    name: "Name"
-    password: "Password"
+    password: "password"
+    firstName: "firstName"
+    lastName: "lastName"
 }
 ```
 #### Returns
 
 ##### Valid
-- A 400 HTTP error if the IP has been rate limited
 - A 200 HTTP response could mean that the call was successful or that the email was invalid (We will not reveal it with an error code to keep the information hidden from bad actors).
 
 ##### Invalid
 - 401 HTTP response code.
+- A 400 HTTP error if the IP has been rate limited
+### Request_activation_code
+#### Endpoint
+- Type `POST`
+- `/activate`
+#### Inputs
+```json
+{
+    "recepient":"email",
+}
+```
+#### Returns
+##### Valid
+
+- When called this endpoint will send a message to the recipient using the specified channel ( if implemented ).
+##### Invalid
+- A 400 HTTP response code if the IP has been rate limited.
+- A 200 HTTP response code could mean that the call was successful or that the email was invalid (We will not reveal it with an error code to keep the information hidden from bad actors).
 
 ### Activate
 #### Endpoint
 - Type `POST`
-- `/token/activate`
+- `/activate/authenticate`
 #### Inputs
 ```json
 {
@@ -160,6 +180,19 @@ this.http.get('https://api.npms.io/v2/search?q=scope:angular', { headers }).subs
 
 - 401 HTTP response code.
 
+### Logout
+#### Endpoint
+- type `DELETE`
+- `token/logout`
+#### Inputs
+- This endpoint takes the [JWT](https://datatracker.ietf.org/doc/html/rfc7515#section-3.3) token from the header and invalidates it.
+#### Returns
+##### Valid
+- 200 HTTP response code.
+- After this you must redirect the user to the login procedure.
+##### Invalid
+- 400 HTTP response code.
+
 
 ### Token_Validation 
 #### Endpoint
@@ -177,7 +210,7 @@ This endpoint takes the [JWT](https://datatracker.ietf.org/doc/html/rfc7515#sect
 ### Group_Check 
 #### Endpoint
 - Type `GET`
-- `/token/groups?g=group1,group2`
+- `/token/groups`
 #### Inputs
 - This endpoint takes the [JWT](https://datatracker.ietf.org/doc/html/rfc7515#section-3.3) token from the header.
 
@@ -207,7 +240,18 @@ Without
 - If one of the groups does not exist it will return a 400 response code.
 
 
+### Get email from token
+#### Endpoint
+- type `POST`
+- `/token/email`
+#### Inputs
+- This endpoint takes the [JWT](https://datatracker.ietf.org/doc/html/rfc7515#section-3.3) token from the header.
+#### Returns
+##### Valid
+- 200 HTTP response code
 
+##### Invalid
+- 400 HTTP response code
 
 
 ### Request_password_recovery
@@ -217,7 +261,9 @@ Without
 #### Inputs
 ```json
 {
-    email: "email"
+    "email":"email"
+    "recepient":"email | number | ...",
+    "channel":"email | sms | ..."
 }
 ```
 #### Returns
@@ -227,11 +273,12 @@ Without
 ##### Invalid
 - A 400 HTTP response code if the IP has been rate limited.
 - A 200 HTTP response code could mean that the call was successful or that the email was invalid (We will not reveal it with an error code to keep the information hidden from bad actors).
+- A 501 HTTP response if the specified channel is not implemented
 
 ### Verify_password_recovery
 #### Endpoint
 - type `POST`
-- `/recovery/authenticate`
+- `/recovery/auth`
 #### Inputs
 ```json
 {
