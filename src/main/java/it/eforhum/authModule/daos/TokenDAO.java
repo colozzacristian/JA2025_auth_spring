@@ -40,5 +40,4 @@ public class TokenDAO {
         return token != null && token.getToken().equals(tokenStr) && !token.isExpired();
     }
     
-    
 }

@@ -50,6 +50,8 @@ public class LoginServlet extends HttpServlet{
             Token t = JWTUtils.generateJWT(u);
             tokenStore.getJwtToken().saveToken(t);
 
+            System.out.println(t.getToken());
+
             response.getWriter().write(mapper.writeValueAsString(new JWTResponseDTO(t.getToken())));
             
         }else{
