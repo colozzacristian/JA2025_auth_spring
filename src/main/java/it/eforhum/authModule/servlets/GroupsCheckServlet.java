@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import it.eforhum.authModule.daos.UserDAO;
 import it.eforhum.authModule.daos.UserDAOImp;
 import it.eforhum.authModule.dtos.GroupsListRespDTO;
 import it.eforhum.authModule.dtos.InGroupsRespDTO;
@@ -18,8 +19,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet(name="GroupCheck", urlPatterns = "/token/groups")
 public class GroupsCheckServlet extends HttpServlet{
-	
-    private UserDAOImp userDAO = new UserDAOImp();
+    
+    private UserDAO userDAO = new UserDAOImp();
     private TokenStore tokenStore = TokenStore.getInstance();
     private ObjectMapper objectMapper = new ObjectMapper();
 

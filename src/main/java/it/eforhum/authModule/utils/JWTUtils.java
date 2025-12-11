@@ -12,6 +12,8 @@ import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
 
+
+
 public class JWTUtils {
 
     public static final int TOKEN_EXPIRATION = Integer.parseInt(Dotenv.load().get("token_expiration"));
@@ -22,6 +24,7 @@ public class JWTUtils {
         SECRET_KEY = hmacShaKeyFor(Dotenv.load().get("JWT_SECRET").getBytes());
     }
     
+    
     public static Token generateJWT(User user) {
 
         if (! user.isActive()) {
@@ -30,7 +33,6 @@ public class JWTUtils {
 
         Date now = Date.valueOf(LocalDate.now());
         LocalDateTime expiration = LocalDateTime.now().plusSeconds(TOKEN_EXPIRATION);
-        String[]roles = {"USER","ADMIN"};
 
         
         String jws = Jwts.builder()

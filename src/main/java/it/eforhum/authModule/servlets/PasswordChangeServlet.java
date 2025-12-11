@@ -2,7 +2,6 @@ package it.eforhum.authModule.servlets;
 
 import it.eforhum.authModule.dtos.PasswordChangeReqDTO;
 import it.eforhum.authModule.entities.User;
-import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.utils.TokenStore;
 import it.eforhum.authModule.utils.JWTUtils;
 import it.eforhum.authModule.daos.UserDAOImp;

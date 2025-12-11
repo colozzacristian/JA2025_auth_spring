@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.eforhum.authModule.daos.UserDAOImp;
 import it.eforhum.authModule.dtos.JWTRespDTO;
-import it.eforhum.authModule.dtos.RegistrationDTOReq;
+import it.eforhum.authModule.dtos.RegistrationReqDTO;
 import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
 import it.eforhum.authModule.utils.JWTUtils;
@@ -26,7 +26,7 @@ public class RegistrationServlet extends HttpServlet{
     throws ServletException, IOException{
         response.setContentType("text/html;charset=UTF-8");
         String body = new String(request.getInputStream().readAllBytes());
-        RegistrationDTOReq registrationDTO = objectMapper.readValue(body, RegistrationDTOReq.class);
+        RegistrationReqDTO registrationDTO = objectMapper.readValue(body, RegistrationReqDTO.class);
 
         String email = registrationDTO.email();
         String password = PasswordHash.crypt(registrationDTO.password());

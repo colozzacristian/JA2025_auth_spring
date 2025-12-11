@@ -2,39 +2,45 @@ package it.eforhum.authModule.servlets;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.eforhum.authModule.dtos.EmailRespDTO;
 import it.eforhum.authModule.utils.JWTUtils;
+import it.eforhum.authModule.utils.TokenStore;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet(name = "GetEmailFromToken", urlPatterns = "token/getEmail")
+@WebServlet(name = "GetEmailFromToken", urlPatterns = "/token/email")
 public class GetEmailFromToken extends HttpServlet{
+
+    private static ObjectMapper objectMapper = new ObjectMapper();
+    private TokenStore tokenStore = TokenStore.getInstance();
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
     throws ServletException, IOException{
-
-        response.setContentType("application/json");
         
-        String email = null;
+        String email;
 
         String authHeader = request.getHeader("Authorization");
 
-        if(authHeader == null && !authHeader.startsWith("Bearer ")){
+        if(authHeader == null || !authHeader.startsWith("Bearer ")){
             response.setStatus(401);
             return;
         }
 
         String jwtToken = authHeader.substring(7);
 
-        if(JWTUtils.isTokenSignatureValid(jwtToken)){
+        if(tokenStore.getJwtToken().isTokenValid(jwtToken)){
 
             email = JWTUtils.getEmailFromToken(jwtToken);
+            response.setContentType("application/json");
 
             response.setStatus(200);
-            response.getWriter().write(email);
+            response.getWriter().write(objectMapper.writeValueAsString(new EmailRespDTO(email)));
         }else{
             response.setStatus(400);
         }

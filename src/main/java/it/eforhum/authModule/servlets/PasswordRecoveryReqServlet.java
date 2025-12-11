@@ -30,9 +30,9 @@ import java.io.IOException;
 @WebServlet("/recovery")
 public class PasswordRecoveryReqServlet extends HttpServlet{
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-    private UserDAOImp userDAO = new UserDAOImp();
-    private TokenStore tokenStore = TokenStore.getInstance();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final UserDAOImp userDAO = new UserDAOImp();
+    private final TokenStore tokenStore = TokenStore.getInstance();
     private static final List<String> allowedChannels = List.of("email"); 
     private static final Dotenv dotenv = Dotenv.load();
     private static final HttpClient httpClient = HttpClient.newHttpClient();

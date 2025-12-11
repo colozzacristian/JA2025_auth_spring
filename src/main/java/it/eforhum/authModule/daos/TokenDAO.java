@@ -1,8 +1,6 @@
 package it.eforhum.authModule.daos;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import it.eforhum.authModule.entities.Token;
 
@@ -27,7 +25,6 @@ public class TokenDAO {
     }
 
     public void purgeExpiredTokens() {
-        List<String> expiredTokens = new ArrayList<>();
         for (Token token : token_map.values()) {
             if (token.isExpired()) {
                 token_map.remove(token.getUser().getEmail());

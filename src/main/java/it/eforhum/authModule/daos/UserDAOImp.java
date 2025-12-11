@@ -1,171 +1,195 @@
 package it.eforhum.authModule.daos;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import static java.lang.String.format;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.github.cdimascio.dotenv.Dotenv;
+import it.eforhum.authModule.dtos.LoginReqDTO;
+import it.eforhum.authModule.dtos.RegistrationReqDTO;
 import it.eforhum.authModule.entities.User;
-import it.eforhum.authModule.utils.HibernateUtil;
 import it.eforhum.authModule.utils.PasswordHash;
 
 
 public class UserDAOImp implements UserDAO {
 
-    private static final SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+    private static final Dotenv dotenv = Dotenv.load();
+    private static final HttpClient httpClient = HttpClient.newHttpClient();
+        private ObjectMapper objectMapper = new ObjectMapper();
+
+
 
     @Override
     public User getByEmail(String email){
 
         User u = null;
+        HttpRequest request;
+        HttpResponse<String> response;
 
-        try(Session session = sessionFactory.openSession()){
-
-            u = session.createQuery("FROM User u WHERE u.Email = :email", User.class)
-                       .setParameter("email", email)
-                       .uniqueResult();
-
-        }catch(Exception e){
+        try {
+            request = HttpRequest.newBuilder()
+                .uri(new URL(format("%s/api/user/getExtended/Email/%s", dotenv.get("BACKOFFICE_SERVICE_URL"), email)).toURI())
+                .header("Content-Type", "application/json")
+                .GET()
+                .timeout(Duration.ofSeconds(200))
+                .build();
+                
+            response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
+        } catch (MalformedURLException e) {
+            //Log URL error
             e.printStackTrace();
-        }
-
-        return u;
-    }
-
-    @Override
-    public User getById(int id){
-
-        User u = null;
-
-        try(Session session = sessionFactory.openSession()){
-
-            u = session.get(User.class,id);
-
-        }catch(Exception e){
+            return null;
+        }catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
 
-        return u;
-    }
-
-    @Override
-    public List<User> getAll(){
-
-        List<User> allUserList = null;
-
-        try(Session session = sessionFactory.openSession()){
-
-            Query<User> query = session.createQuery("From User",User.class);
-
-            allUserList = query.list();
+        if (response.statusCode() != 200) {
+            return null;
         }
-
-        return allUserList;
-    }
-
-    @Override
-    public List<User> getInactive(){
-
-        List<User> inactiveUsers = null;
-
-        try(Session session = sessionFactory.openSession()){
-
-            Query<User> query = session.createQuery("FROM User u WHERE u.Active = false",User.class);
-
-            inactiveUsers = query.list();           
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-
-        return inactiveUsers;
-
-    }
-
-    @Override
-    public  List<User> getByCreationDate(LocalDateTime creationDate){
         
-        List<User> usersList = null;
-
-        try(Session session = sessionFactory.openSession()){
-
-            Query<User> query = session.createQuery("FROM User u WHERE u.CreationDate = " + creationDate,User.class);
-            
-            usersList = query.list();           
-        }catch(Exception e){
+        try {
+            u = objectMapper.readValue(response.body(), User.class);
+        } catch (Exception e) {
+            //log deserialization error
             e.printStackTrace();
         }
-        return usersList;       
-    }
-
-    @Override
-    public  List<User> getLastActiveBeforeDate(LocalDateTime date){
-
-        List<User> usersList = null;
-
-        try(Session session = sessionFactory.openSession()){
-
-            Query<User> query = session.createQuery("FROM User u WHERE u.LastAccessDate < " + date,User.class);
-
-            usersList = query.list();           
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        return usersList;
+       
+        return u;
     }
     
     @Override
     public User login(String email,String password){
 
         User u = null;
-        try(Session session = sessionFactory.openSession()){
-            
-            u = session.createQuery("FROM User u WHERE u.Email = :email AND u.PasswordHash = :password", User.class)
-                    .setParameter("email", email)
-                    .setParameter("password",password) 
-                    .uniqueResult();
-            
+        HttpRequest request;
+        HttpResponse<String> response;
 
-            if(u != null){
-                u.setLastAccessDate(LocalDateTime.now());
-                Transaction tr = session.beginTransaction();
-                tr.commit();
-            }
+        try{
+            request = HttpRequest.newBuilder()
+                .uri(new URL(format("%s/api/user/login", dotenv.get("BACKOFFICE_SERVICE_URL"), email)).toURI())
+                .header("Content-Type", "application/json")
+                .POST(
+                    HttpRequest.BodyPublishers.ofString(
+                    objectMapper.writeValueAsString(
+                        new LoginReqDTO(email, PasswordHash.crypt(password))
+                        ))
+                )
+                .timeout(Duration.ofSeconds(200))
+                .build();
+                
+            response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
+        } catch (MalformedURLException e) {
+            //Log URL error
+            e.printStackTrace();
+            return null;
             
         }catch(Exception e){
             e.printStackTrace();
+            return null;
         }
 
+        if (response.statusCode() != 200) {
+            return null;
+        }
+        
+        try {
+            u = objectMapper.readValue(response.body(), User.class);
+        } catch (Exception e) {
+            //log deserialization error
+            e.printStackTrace();
+        }
+       
         return u;
 
     }
 
+    @Override
     public User create(String email, String password, String name, String surname){
         User u = null;
-        try(Session session = sessionFactory.openSession()){
-           Transaction tr = session.beginTransaction();
-           u = new User(email, password, name, surname, true, LocalDateTime.now(), null);
-           session.persist(u);
-              
-            tr.commit();
+        HttpRequest request;
+        HttpResponse<String> response;
+
+        try{
+            request = HttpRequest.newBuilder()
+                .uri(new URL(format("%s/api/user/create", dotenv.get("BACKOFFICE_SERVICE_URL"))).toURI())
+                .header("Content-Type", "application/json")
+                .POST(
+                    HttpRequest.BodyPublishers.ofString(
+                    objectMapper.writeValueAsString(
+                        new RegistrationReqDTO(email, PasswordHash.crypt(password), name, surname)
+                        ))
+
+                )
+                .timeout(Duration.ofSeconds(200))
+                .build();
+                
+            response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
+        } catch (MalformedURLException e) {
+            //Log URL error
+            e.printStackTrace();
+            return null;
             
         }catch(Exception e){
             e.printStackTrace();
+            return null;
         }
-        return u;
-    }
 
-    public void changePassword(User u, String newPassword){
-        try(Session session = sessionFactory.openSession()){
-            Transaction tr = session.beginTransaction();
-            u.setPasswordHash(PasswordHash.crypt(newPassword));
-            session.merge(u);
-            tr.commit();
-        }catch(Exception e){
+        if (response.statusCode() != 200) {
+            return null;
+        }
+        
+        try {
+            u = objectMapper.readValue(response.body(), User.class);
+        } catch (Exception e) {
+            //log deserialization error
             e.printStackTrace();
         }
+       
+        return u;
+
+    }
+
+    @Override
+    public boolean changePassword(User u, String newPassword){
+        HttpRequest request;
+        HttpResponse<String> response;
+        u.setPasswordHash(PasswordHash.crypt(newPassword));
+        try{
+            request = HttpRequest.newBuilder()
+                .uri(new URL(format("%s/api/user/update", dotenv.get("BACKOFFICE_SERVICE_URL"))).toURI())
+                .header("Content-Type", "application/json")
+                .POST(
+                    HttpRequest.BodyPublishers.ofString(
+                    objectMapper.writeValueAsString(
+                        u
+                        ))
+                )
+                .timeout(Duration.ofSeconds(200))
+                .build();
+                
+            response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
+        } catch (MalformedURLException e) {
+            //Log URL error
+            e.printStackTrace();
+            return false;
+        }catch(Exception e){
+            e.printStackTrace();
+            return false;
+        }
+
+        if (response.statusCode() != 200) {
+            //log error
+            return false;
+        }
+
+        return true;
     }
     
 }
