@@ -33,6 +33,7 @@ public class ActivationReqServlet extends HttpServlet{
     private TokenStore tokenStore = TokenStore.getInstance();
     private UserDAOImp userDAO = new UserDAOImp();
     
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
     throws  ServletException, IOException{
         
