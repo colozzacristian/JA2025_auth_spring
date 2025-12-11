@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import it.eforhum.authModule.daos.UserDAOImp;
-import it.eforhum.authModule.dtos.RecoveryEmailReqDTO;
+import it.eforhum.authModule.dtos.EmailReqDTO;
 import it.eforhum.authModule.dtos.RecoveryReqDTO;
 import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
@@ -115,11 +115,8 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(
                     objectMapper.writeValueAsString(
-                        // new RecoveryMsgReqDTO(
-                        //     email,
-                        //     recoveryDTO.contact(),
-                        //     t.getToken()
-                        new RecoveryEmailReqDTO( email,
+
+                        new EmailReqDTO( email,
                             "Password recovery request",
                             getEmailBody(t)
                     ))))
