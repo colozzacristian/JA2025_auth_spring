@@ -1,7 +1,10 @@
 package it.eforhum.authModule.servlets;
 
 import java.io.IOException;
+import static java.lang.String.format;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -20,26 +23,30 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name="GroupCheck", urlPatterns = "/token/groups")
 public class GroupsCheckServlet extends HttpServlet{
     
-    private UserDAO userDAO = new UserDAOImp();
-    private TokenStore tokenStore = TokenStore.getInstance();
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private static final UserDAO userDAO = new UserDAOImp();
+    private static final TokenStore tokenStore = TokenStore.getInstance();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final Logger logger = Logger.getLogger(GroupsCheckServlet.class.getName());
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
 
-        String[] groupsToCheck = null;
+        String[] groupsToCheck;
         List<String> groups;
         boolean isInGroups = true;
         String jwtToken,userEmail;
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ") ) {
+            logger.log(Level.WARNING, format("Missing or invalid Authorization header from IP: %s", request.getRemoteAddr()));
             response.setStatus(401);
             return;
         }
         jwtToken = authHeader.substring(7);
         if (!JWTUtils.isTokenSignatureValid(jwtToken)) {
+            logger.log(Level.WARNING, format("Invalid token signature from IP: %s", request.getRemoteAddr()));
             response.setStatus(401);
             return;
         }
@@ -47,6 +54,7 @@ public class GroupsCheckServlet extends HttpServlet{
         userEmail = JWTUtils.getEmailFromToken(jwtToken);
 
         if (!tokenStore.getJwtToken().isTokenValid(userEmail,jwtToken) ) {
+            logger.log(Level.WARNING, format("Invalid or expired JWT token used from IP: %s", request.getRemoteAddr()));
             response.setStatus(401);
             return;
         }

@@ -16,8 +16,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "GetEmailFromToken", urlPatterns = "/token/email")
 public class GetEmailFromToken extends HttpServlet{
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
-    private TokenStore tokenStore = TokenStore.getInstance();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final TokenStore tokenStore = TokenStore.getInstance();
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 

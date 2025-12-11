@@ -1,12 +1,16 @@
 package it.eforhum.authModule.daos;
 
+import java.io.IOException;
 import static java.lang.String.format;
-import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -21,34 +25,22 @@ public class UserDAOImp implements UserDAO {
 
     private static final Dotenv dotenv = Dotenv.load();
     private static final HttpClient httpClient = HttpClient.newHttpClient();
-        private ObjectMapper objectMapper = new ObjectMapper();
-
-
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final Logger logger = Logger.getLogger(UserDAOImp.class.getName());
 
     @Override
     public User getByEmail(String email){
 
         User u = null;
-        HttpRequest request;
+        Builder request;
         HttpResponse<String> response;
 
-        try {
-            request = HttpRequest.newBuilder()
-                .uri(new URL(format("%s/api/user/getExtended/Email/%s", dotenv.get("BACKOFFICE_SERVICE_URL"), email)).toURI())
+        request = HttpRequest.newBuilder()
                 .header("Content-Type", "application/json")
                 .GET()
-                .timeout(Duration.ofSeconds(200))
-                .build();
-                
-            response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
-        } catch (MalformedURLException e) {
-            //Log URL error
-            e.printStackTrace();
-            return null;
-        }catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+                .timeout(Duration.ofSeconds(200));
+
+        response = sendRequest(format("%s/api/user/getExtended/Email/%s", dotenv.get("BACKOFFICE_SERVICE_URL"), email), request);
 
         if (response.statusCode() != 200) {
             return null;
@@ -56,9 +48,8 @@ public class UserDAOImp implements UserDAO {
         
         try {
             u = objectMapper.readValue(response.body(), User.class);
-        } catch (Exception e) {
-            //log deserialization error
-            e.printStackTrace();
+        } catch (IOException e) {
+            logger.log(Level.WARNING, format("Deserialization error when trying to get user by email: %s", email), e);
         }
        
         return u;
@@ -68,32 +59,24 @@ public class UserDAOImp implements UserDAO {
     public User login(String email,String password){
 
         User u = null;
-        HttpRequest request;
+        Builder request;
         HttpResponse<String> response;
 
-        try{
-            request = HttpRequest.newBuilder()
-                .uri(new URL(format("%s/api/user/login", dotenv.get("BACKOFFICE_SERVICE_URL"), email)).toURI())
+         request = HttpRequest.newBuilder()
                 .header("Content-Type", "application/json")
-                .POST(
-                    HttpRequest.BodyPublishers.ofString(
+                .timeout(Duration.ofSeconds(200));
+        try{
+            request.POST(
+                HttpRequest.BodyPublishers.ofString(
                     objectMapper.writeValueAsString(
                         new LoginReqDTO(email, PasswordHash.crypt(password))
-                        ))
-                )
-                .timeout(Duration.ofSeconds(200))
-                .build();
-                
-            response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
-        } catch (MalformedURLException e) {
-            //Log URL error
-            e.printStackTrace();
-            return null;
-            
-        }catch(Exception e){
-            e.printStackTrace();
+            )));
+        }catch(IOException e){
+            logger.log(Level.SEVERE, format("Failed to serialize login request for user: %s", email), e);
             return null;
         }
+
+        response = sendRequest(format("%s/api/user/login", dotenv.get("BACKOFFICE_SERVICE_URL")), request);
 
         if (response.statusCode() != 200) {
             return null;
@@ -101,9 +84,8 @@ public class UserDAOImp implements UserDAO {
         
         try {
             u = objectMapper.readValue(response.body(), User.class);
-        } catch (Exception e) {
-            //log deserialization error
-            e.printStackTrace();
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, format("Deserialization error when trying to login user: %s", email), e);
         }
        
         return u;
@@ -113,33 +95,26 @@ public class UserDAOImp implements UserDAO {
     @Override
     public User create(String email, String password, String name, String surname){
         User u = null;
-        HttpRequest request;
+        Builder request;
         HttpResponse<String> response;
 
-        try{
-            request = HttpRequest.newBuilder()
-                .uri(new URL(format("%s/api/user/create", dotenv.get("BACKOFFICE_SERVICE_URL"))).toURI())
+
+        request = HttpRequest.newBuilder()
                 .header("Content-Type", "application/json")
-                .POST(
-                    HttpRequest.BodyPublishers.ofString(
+                .timeout(Duration.ofSeconds(200));
+
+        try{
+            request.POST(
+                HttpRequest.BodyPublishers.ofString(
                     objectMapper.writeValueAsString(
                         new RegistrationReqDTO(email, PasswordHash.crypt(password), name, surname)
-                        ))
-
-                )
-                .timeout(Duration.ofSeconds(200))
-                .build();
-                
-            response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
-        } catch (MalformedURLException e) {
-            //Log URL error
-            e.printStackTrace();
-            return null;
-            
-        }catch(Exception e){
-            e.printStackTrace();
+            )));
+        }catch(IOException e){
+            logger.log(Level.SEVERE, "Error serializing user object for creation", e);
             return null;
         }
+
+        response = sendRequest(format("%s/api/user/create", dotenv.get("BACKOFFICE_SERVICE_URL")), request);
 
         if (response.statusCode() != 200) {
             return null;
@@ -147,9 +122,8 @@ public class UserDAOImp implements UserDAO {
         
         try {
             u = objectMapper.readValue(response.body(), User.class);
-        } catch (Exception e) {
-            //log deserialization error
-            e.printStackTrace();
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Deserialization error when trying to create user", e);
         }
        
         return u;
@@ -158,38 +132,45 @@ public class UserDAOImp implements UserDAO {
 
     @Override
     public boolean changePassword(User u, String newPassword){
-        HttpRequest request;
+        Builder request;
         HttpResponse<String> response;
         u.setPasswordHash(PasswordHash.crypt(newPassword));
-        try{
-            request = HttpRequest.newBuilder()
-                .uri(new URL(format("%s/api/user/update", dotenv.get("BACKOFFICE_SERVICE_URL"))).toURI())
+
+
+        request = HttpRequest.newBuilder()
                 .header("Content-Type", "application/json")
-                .POST(
+                .timeout(Duration.ofSeconds(200));
+
+        try {
+            request.POST(
                     HttpRequest.BodyPublishers.ofString(
-                    objectMapper.writeValueAsString(
-                        u
-                        ))
-                )
-                .timeout(Duration.ofSeconds(200))
-                .build();
-                
-            response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
-        } catch (MalformedURLException e) {
-            //Log URL error
-            e.printStackTrace();
-            return false;
-        }catch(Exception e){
-            e.printStackTrace();
-            return false;
+                        objectMapper.writeValueAsString(u)
+                    )
+                );
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Error serializing user object for password change", e);
         }
+         
+        response = sendRequest(format("%s/api/user/update", dotenv.get("BACKOFFICE_SERVICE_URL")), request);
 
-        if (response.statusCode() != 200) {
-            //log error
-            return false;
+        return response != null && response.statusCode() == 200;
+    }
+
+
+    private HttpResponse<String> sendRequest(String Uri,Builder request){
+        HttpResponse<String> response;
+
+        try{
+            request.uri(new URL(Uri).toURI());
+            response = httpClient.send(request.build(),HttpResponse.BodyHandlers.ofString());
+        }catch (URISyntaxException e){
+            logger.log(Level.SEVERE, format("Invalid URI syntax: %s", Uri), e);
+            return null;
+        } catch (IOException | InterruptedException e){
+            logger.log(Level.SEVERE, "Error sending HTTP request", e);
+            return null;
         }
-
-        return true;
+        return response;
     }
     
 }

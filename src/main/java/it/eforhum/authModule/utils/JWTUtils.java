@@ -7,12 +7,11 @@ import java.time.LocalDateTime;
 import javax.crypto.SecretKey;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
-
-
 
 public class JWTUtils {
 
@@ -61,7 +60,7 @@ public class JWTUtils {
             Jwts.parser().verifyWith(SECRET_KEY).build()
                 .parseSignedClaims(token);
             return true;
-        } catch (Exception e) {
+        } catch (JwtException e) {
             return false;
         }
     }

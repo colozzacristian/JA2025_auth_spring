@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "LogoutServlet" , urlPatterns = "/token/logout")
 public class LogoutServlet extends HttpServlet{
     
-    private static TokenStore tokenStore = TokenStore.getInstance();
+    private static final TokenStore tokenStore = TokenStore.getInstance();
     
     @Override
 	public void doDelete(HttpServletRequest request, HttpServletResponse response)
@@ -23,11 +23,6 @@ public class LogoutServlet extends HttpServlet{
 
         String authHeader = request.getHeader("Authorization");
 
-        if(authHeader == null || !authHeader.startsWith("Bearer ")){
-            response.setStatus(401);
-            return;
-        }
-
         String jwtToken = authHeader.substring(7);
 
         if(tokenStore.getJwtToken().isTokenValid(jwtToken)){
@@ -35,10 +30,9 @@ public class LogoutServlet extends HttpServlet{
             String email = JWTUtils.getEmailFromToken(jwtToken);
             tokenStore.getJwtToken().invalidateToken(email);
 
-            response.setStatus(200);
-
-        }else{
-            response.setStatus(400);
         }
+
+        response.setStatus(200);
+        
     }
 }
