@@ -1,20 +1,20 @@
 package it.eforhum.authModule.servlets;
 
-import it.eforhum.authModule.dtos.PasswordChangeReqDTO;
-import it.eforhum.authModule.entities.User;
-import it.eforhum.authModule.utils.TokenStore;
-import it.eforhum.authModule.utils.JWTUtils;
-import it.eforhum.authModule.daos.UserDAOImp;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.annotation.WebServlet;
-
 import java.io.IOException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.eforhum.authModule.daos.UserDAOImp;
+import it.eforhum.authModule.dtos.PasswordChangeReqDTO;
+import it.eforhum.authModule.entities.User;
+import it.eforhum.authModule.utils.JWTUtils;
+import it.eforhum.authModule.utils.RateLimitingUtils;
+import it.eforhum.authModule.utils.TokenStore;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 
 @WebServlet("/password/change-password")
@@ -37,6 +37,7 @@ public class PasswordChangeServlet extends HttpServlet{
 
         TokenStore tokenStore = TokenStore.getInstance();
         if(!tokenStore.getRecoveryToken().isTokenValid(passwordChangeDTO.token())){
+            RateLimitingUtils.recordFailedAttempt(req.getRemoteAddr());
             resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }

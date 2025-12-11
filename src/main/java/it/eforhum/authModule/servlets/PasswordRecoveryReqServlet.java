@@ -1,15 +1,15 @@
 package it.eforhum.authModule.servlets;
 
+import java.io.IOException;
 import static java.lang.String.format;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.time.Duration;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import it.eforhum.authModule.daos.UserDAOImp;
@@ -18,13 +18,13 @@ import it.eforhum.authModule.dtos.RecoveryReqDTO;
 import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
 import it.eforhum.authModule.utils.OTPUtils;
+import it.eforhum.authModule.utils.RateLimitingUtils;
 import it.eforhum.authModule.utils.TokenStore;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.ServletException;
-import java.io.IOException;
 
 
 @WebServlet("/recovery")
@@ -50,7 +50,7 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
         User u = findUserByContact(recoveryDTO.channel(), recoveryDTO.contact());
         
         if(u == null) {
-            /*Implement rate limiting and log ip */
+            RateLimitingUtils.recordFailedAttempt(req.getRemoteAddr());
             return;
         }
         

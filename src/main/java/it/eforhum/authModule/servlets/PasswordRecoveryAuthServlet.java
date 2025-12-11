@@ -10,6 +10,7 @@ import it.eforhum.authModule.dtos.TempTokenRespDTO;
 import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
 import it.eforhum.authModule.utils.JWTUtils;
+import it.eforhum.authModule.utils.RateLimitingUtils;
 import it.eforhum.authModule.utils.TokenStore;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -49,10 +50,13 @@ public class PasswordRecoveryAuthServlet extends HttpServlet{
 
         if(!tokenStore.getOtpToken().isTokenValid(recoveryAuthDTO.email(), recoveryAuthDTO.otp())){
             resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            RateLimitingUtils.recordFailedAttempt(req.getRemoteAddr());
             return null;
         }
         User u = userDAO.getByEmail(recoveryAuthDTO.email());
         if(u == null){
+            //this should not happen, as the otp token was valid
+            //log edge case AS IMPORTANT
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
         
