@@ -167,5 +167,18 @@ public class UserDAOImp implements UserDAO {
             e.printStackTrace();
         }
     }
+
+    public boolean activateUser(User u){
+        try(Session session = sessionFactory.openSession()){
+            Transaction tr = session.beginTransaction();
+            u.setActive(true);
+            session.merge(u);
+            tr.commit();
+            return true;
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return false;
+    }
     
 }

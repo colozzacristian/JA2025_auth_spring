@@ -12,12 +12,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import it.eforhum.authModule.daos.UserDAOImp;
-import it.eforhum.authModule.dtos.EmailDTO;
+import it.eforhum.authModule.dtos.ActivationDataDTO;
 import it.eforhum.authModule.dtos.EmailReqDTO;
-import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
-import it.eforhum.authModule.utils.OTPUtils;
-import it.eforhum.authModule.utils.TokenStore;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -30,7 +27,6 @@ public class ActivationReqServlet extends HttpServlet{
     private ObjectMapper mapper = new ObjectMapper();
 
     private static final Dotenv dotenv = Dotenv.load();
-    private TokenStore tokenStore = TokenStore.getInstance();
     private UserDAOImp userDAO = new UserDAOImp();
     
     @Override
@@ -38,18 +34,15 @@ public class ActivationReqServlet extends HttpServlet{
     throws  ServletException, IOException{
         
         String body = new String(request.getInputStream().readAllBytes());
-        EmailDTO email = mapper.readValue(body, EmailDTO.class);
-
-        User u = userDAO.getByEmail(email.email());
-
+        ActivationDataDTO activationData = mapper.readValue(body, ActivationDataDTO.class);
+        
+        User u = userDAO.getByEmail(activationData.email());
+        
         if(u == null){
             return;
         }
 
-        Token otpToken = OTPUtils.generateOTP(u);
-        tokenStore.getOtpToken().saveToken(otpToken);
-
-        int status = sendActivationCode(otpToken, email.email());
+        int status = sendActivationCode(activationData.OTP(), activationData.email());
 
         if(status == 200){
             response.setStatus(200);
@@ -60,7 +53,7 @@ public class ActivationReqServlet extends HttpServlet{
         response.getWriter().write("An error occoured while sending the email with the activation code");
     }
 
-    private int sendActivationCode(Token t,String email){
+    protected int sendActivationCode(String token ,String email){
         HttpClient httpClient = HttpClient.newHttpClient();
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -70,7 +63,7 @@ public class ActivationReqServlet extends HttpServlet{
                     mapper.writeValueAsString(new EmailReqDTO(
                             email,
                             "Account activation code",
-                            getEmailBody(t)
+                            getEmailBody(token)
                         )
                     )))
                     .timeout(Duration.ofSeconds(200))
@@ -87,12 +80,12 @@ public class ActivationReqServlet extends HttpServlet{
         }
     }
 
-    private String getEmailBody(Token t){
+    private String getEmailBody(String token){
         StringBuilder sb = new StringBuilder("<html>\r\n" + //
                         "    <body>\r\n" + //
                         "        <p>This is your account activation code</p>\r\n" + //
                         "            <h1>");
-        sb.append(t.getToken());
+        sb.append(token);
         sb.append("</h1>\r\n" + //
                         "        <p>Insert this code at: /activate/authenticate</p>\r\n" + //
                         "    </body>\r\n" + //

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import it.eforhum.authModule.daos.TokenDAO;
 import it.eforhum.authModule.daos.UserDAOImp;
 import it.eforhum.authModule.dtos.ActivationDataDTO;
 import it.eforhum.authModule.dtos.TempTokenRespDTO;
@@ -34,11 +35,15 @@ public class ActivationAuthServlet extends HttpServlet{
         if(u == null){
             return;
         }
-
-        Token jwtToken = JWTUtils.generateJWT(u);
-        tknStore.getJwtToken().saveToken(jwtToken);
-        response.setStatus(200);
-        response.getWriter().write(mapper.writeValueAsString(new TempTokenRespDTO(jwtToken.getToken())));
+        
+        if(userDAO.activateUser(u)){
+            Token jwtToken = JWTUtils.generateJWT(u);
+            tknStore.getJwtToken().saveToken(jwtToken);
+            response.setStatus(200);
+            response.getWriter().write(mapper.writeValueAsString(new TempTokenRespDTO(jwtToken.getToken())));
+        }else{
+            response.setStatus(500);
+        }
     }
 
     private User check(HttpServletRequest request , HttpServletResponse response) throws IOException{
@@ -46,9 +51,17 @@ public class ActivationAuthServlet extends HttpServlet{
         User u = null;
 
         try{
+
             String body = new String(request.getInputStream().readAllBytes());
             ActivationDataDTO activationDataDTO = mapper.readValue(body, ActivationDataDTO.class);
+            
             u = userDAO.getByEmail(activationDataDTO.email());
+
+            if(!tknStore.getOtpToken().isTokenValid(activationDataDTO.email(), activationDataDTO.OTP())){
+                response.setStatus(401);
+                return null;
+            }
+            
         }catch(IOException e){
             response.setStatus(400);
             return null;

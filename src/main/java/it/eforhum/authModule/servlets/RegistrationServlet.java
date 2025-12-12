@@ -4,26 +4,32 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import it.eforhum.authModule.daos.UserDAOImp;
-import it.eforhum.authModule.dtos.JWTRespDTO;
 import it.eforhum.authModule.dtos.RegistrationDTOReq;
 import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
-import it.eforhum.authModule.utils.JWTUtils;
+import it.eforhum.authModule.utils.OTPUtils;
 import it.eforhum.authModule.utils.PasswordHash;
+import it.eforhum.authModule.utils.TokenStore;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 @WebServlet(name="RegistrationServlet", urlPatterns="/token/register")
 public class RegistrationServlet extends HttpServlet{
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    UserDAOImp userDao = new UserDAOImp();
+    private static final Dotenv dotenv = Dotenv.load();
+    private TokenStore tokenStore = TokenStore.getInstance();
+    private UserDAOImp userDao = new UserDAOImp();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException{
+        
         response.setContentType("text/html;charset=UTF-8");
         String body = new String(request.getInputStream().readAllBytes());
         RegistrationDTOReq registrationDTO = objectMapper.readValue(body, RegistrationDTOReq.class);
@@ -38,17 +44,40 @@ public class RegistrationServlet extends HttpServlet{
             return;
         }
         
-        
         User user = userDao.create(email, password, name, surname);
 
         if(user != null){
-            response.setStatus(200);
-            Token t = JWTUtils.generateJWT(user);
-            response.getWriter().write(objectMapper.writeValueAsString(new JWTRespDTO(t.getToken())));
+            
+            Token t = OTPUtils.generateOTP(user);
+            tokenStore.getOtpToken().saveToken(t);
+
+            int status = 0;
+            if(t != null){
+                status = sendOtpToken(t, user);
+            }
+
+            if(status == 200){
+                response.setStatus(200);
+            }else{
+                response.getWriter().write(status);
+            }
+            
         }else{
             response.setStatus(400);
         }
 
+    }
+
+    private int sendOtpToken(Token t, User u){
+
+        ActivationReqServlet servlet = new ActivationReqServlet();
+        int status = servlet.sendActivationCode(t.getToken() , u.getEmail() );
+
+        if(status == 200){
+            return status;
+        }
+
+        return status;
     }
 
 }
