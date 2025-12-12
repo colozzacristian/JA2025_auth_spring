@@ -61,8 +61,5 @@ public class PasswordChangeServlet extends HttpServlet{
         userDAO.changePassword(u, passwordChangeDTO.newPassword());
         resp.setStatus(HttpServletResponse.SC_OK);
         logger.log(Level.INFO, format("Password changed successfully for user: %s", u.getEmail()));
-
-        
-
     }
 }

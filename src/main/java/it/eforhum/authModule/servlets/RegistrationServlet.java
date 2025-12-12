@@ -64,12 +64,12 @@ public class RegistrationServlet extends HttpServlet{
 
             if(status == 200){
                 response.setStatus(200);
-            }else{
-                response.getWriter().write(status);
+                return;
             }
             
         }else{
             response.setStatus(400);
+            return;
         }
         
         logger.log(Level.SEVERE, format("Failed to create response after registration for email: %s", email));
@@ -89,5 +89,4 @@ public class RegistrationServlet extends HttpServlet{
 
         return status;
     }
-
 }

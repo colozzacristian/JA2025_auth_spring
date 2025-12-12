@@ -3,27 +3,55 @@ package it.eforhum.authModule.entities;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
 
 
+@Entity
+@Table(name = "users")
 public class User{
     
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long UserId;
 
+    @Column(name = "Email" , nullable = false, unique=true)
     private String Email;
 
+    @Column(name = "PasswordHash" ,nullable = false)
     private String PasswordHash;
 
+    @Column(name="FirstName")
     private String FirstName;
 
+    @Column(name = "LastName")
     private String LastName;
 
+    @Column(name = "Active")
     private boolean Active;
 
+    @Column(name = "CreationDate", nullable=false)
     private LocalDateTime CreationDate;
 
+    @Column(name = "LastAccessDate")
     private LocalDateTime LastAccessDate;
 
-    private Set<String> groups;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "UserGroups",
+        joinColumns = {@JoinColumn(name = "user_id")},
+        inverseJoinColumns = {@JoinColumn(name = "group_id")}
+    )
+    private Set<Group> groups;
 
 
     public User(){}
@@ -110,11 +138,11 @@ public class User{
         this.LastName = LastName;
     }
 
-    public Set<String> getGroups() {
+    public Set<Group> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<String> groups) {
+    public void setGroups(Set<Group> groups) {
         this.groups = groups;
     }
 
@@ -122,7 +150,7 @@ public class User{
         if (groups == null) {
             return new String[0];
         }
-        return groups.toArray(new String[0]);
+        return groups.stream().map(Group::getName).toArray(String[]::new);
     }
 
 }

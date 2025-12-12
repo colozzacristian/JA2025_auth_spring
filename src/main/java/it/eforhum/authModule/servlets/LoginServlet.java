@@ -49,16 +49,12 @@ public class LoginServlet extends HttpServlet{
 
         User u = userDAO.login(email, password);
 
-        if(u == null){
+        if(u != null){
 
             response.setStatus(200);
             
             Token t = JWTUtils.generateJWT(u);
             tokenStore.getJwtToken().saveToken(t);
-
-            System.out.println("\n\n\n\n");
-            System.out.print(t.getToken());
-            System.out.println("\n\n\n\n");
 
             response.getWriter().write(mapper.writeValueAsString(new JWTRespDTO(t.getToken())));
             

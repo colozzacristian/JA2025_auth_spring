@@ -50,11 +50,6 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
             return;
         }
 
-        System.out.println("\n\n\n\n\n");
-        System.out.println("CHANNEL: " + recoveryDTO.channel());
-        System.out.println("CONTACT: " + recoveryDTO.contact());
-        System.out.println("\n\n\n\n\n");
-
         User u = findUserByContact(recoveryDTO.channel(), recoveryDTO.contact());
         
         
@@ -66,9 +61,6 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
         
         Token t = OTPUtils.generateOTP(u);
         tokenStore.getOtpToken().saveToken(t);
-        System.out.println("\n\n\n\n\n");
-        System.out.println("TOKEN: " + t.getToken());
-        System.out.println("\n\n\n\n\n");
 
         int status = sendRecoveryEmail(recoveryDTO,t, u.getEmail());
 
