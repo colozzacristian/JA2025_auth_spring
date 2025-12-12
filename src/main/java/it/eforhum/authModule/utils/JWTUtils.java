@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import javax.crypto.SecretKey;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 import it.eforhum.authModule.entities.Token;
@@ -22,6 +23,7 @@ public class JWTUtils {
         SECRET_KEY = hmacShaKeyFor(Dotenv.load().get("JWT_SECRET").getBytes());
     }
     
+    
     public static Token generateJWT(User user) {
 
         if (! user.isActive()) {
@@ -30,7 +32,6 @@ public class JWTUtils {
 
         Date now = Date.valueOf(LocalDate.now());
         LocalDateTime expiration = LocalDateTime.now().plusSeconds(TOKEN_EXPIRATION);
-        String[]roles = {"USER","ADMIN"};
 
         
         String jws = Jwts.builder()
@@ -59,7 +60,7 @@ public class JWTUtils {
             Jwts.parser().verifyWith(SECRET_KEY).build()
                 .parseSignedClaims(token);
             return true;
-        } catch (Exception e) {
+        } catch (JwtException e) {
             return false;
         }
     }

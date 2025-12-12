@@ -14,7 +14,6 @@ import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
-import it.eforhum.authModule.entities.Group;
 import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
 import it.eforhum.authModule.utils.JWTUtils;
@@ -25,7 +24,7 @@ public class JWTUtilsTest {
 	private static final SecretKey SECRET_KEY = hmacShaKeyFor(Dotenv.load().get("JWT_SECRET").getBytes());
 	private static final User testUser = new User(1L, "a@a.a", "hash", "a", "pino", true, LocalDateTime.now(), LocalDateTime.now());
 	static{
-		testUser.setGroups(Set.of(new Group(1L, "USER"), new Group(2L, "ADMIN")));
+		testUser.setGroups(Set.of("USER","ADMIN"));
 	}
 	@Test
 	public void generateJWT_activeUser_shouldContainClaims() throws Exception {

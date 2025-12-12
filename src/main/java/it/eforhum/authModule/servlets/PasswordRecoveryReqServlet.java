@@ -2,12 +2,15 @@ package it.eforhum.authModule.servlets;
 
 import java.io.IOException;
 import static java.lang.String.format;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -18,6 +21,7 @@ import it.eforhum.authModule.dtos.RecoveryReqDTO;
 import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
 import it.eforhum.authModule.utils.OTPUtils;
+import it.eforhum.authModule.utils.RateLimitingUtils;
 import it.eforhum.authModule.utils.TokenStore;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -29,18 +33,18 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet("/recovery")
 public class PasswordRecoveryReqServlet extends HttpServlet{
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-    private UserDAOImp userDAO = new UserDAOImp();
-    private TokenStore tokenStore = TokenStore.getInstance();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final UserDAOImp userDAO = new UserDAOImp();
+    private final TokenStore tokenStore = TokenStore.getInstance();
     private static final List<String> allowedChannels = List.of("email"); 
     private static final Dotenv dotenv = Dotenv.load();
     private static final HttpClient httpClient = HttpClient.newHttpClient();
+    private static final Logger logger = Logger.getLogger(PasswordRecoveryReqServlet.class.getName());
     
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
         throws ServletException, IOException {
         
-        /* return if rate limited */
         RecoveryReqDTO recoveryDTO = parseRequest(req, resp);
         if(recoveryDTO == null) {
             return;
@@ -55,7 +59,8 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
         
         
         if(u == null) {
-            /*Implement rate limiting and log ip */
+            logger.log(Level.WARNING, format("Password recovery attempt for non-existent user/channel via %s: %s from IP: %s", recoveryDTO.channel(), recoveryDTO.contact(), req.getRemoteAddr()));
+            RateLimitingUtils.recordFailedAttempt(req.getRemoteAddr());
             return;
         }
         
@@ -68,10 +73,12 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
         int status = sendRecoveryEmail(recoveryDTO,t, u.getEmail());
 
         if(status == 200) {
+            logger.log(Level.INFO, format("Sent recovery message to user: %s via %s", u.getEmail(), recoveryDTO.channel()));
             resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }
 
+        logger.log(Level.SEVERE, format("Failed to send recovery message, status code: %d", status));
         resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         resp.getWriter().write(resp.getStatus());
         resp.getWriter().write("Error sending recovery message");
@@ -80,13 +87,10 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
 
     private User findUserByContact(String channel, String contact) {
         User u;
-        switch(channel) {
-            case "email":
-                u = userDAO.getByEmail(contact);
-                break;
-            default:
-                u = null;
-        }
+        u = switch (channel) {
+            case "email" -> userDAO.getByEmail(contact);
+            default -> null;
+        };
         return u;
     }
 
@@ -95,11 +99,13 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
         try{
             recoveryDTO = objectMapper.readValue(req.getInputStream(), RecoveryReqDTO.class);
         }catch(IOException e){
+            logger.log(Level.WARNING, format("Failed to parse recovery request: %s", e.getMessage()));
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return null;
         }
 
         if(!allowedChannels.contains(recoveryDTO.channel())) {
+            logger.log(Level.WARNING, format("Unsupported recovery channel used from IP: %s", req.getRemoteAddr()));
             resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
             resp.getWriter().write("Channel not supported");
             return null;
@@ -128,11 +134,9 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
 
             HttpResponse<String> response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
             return response.statusCode();
-            /* Log failure from mail module */
 
-        } catch (Exception e) {
-
-            /*Log the exception */
+        } catch (IOException | InterruptedException | URISyntaxException e) {
+            logger.log(Level.SEVERE, format("Exception while sending recovery message: %s", e.getMessage()));
             return 500;
         }
     }

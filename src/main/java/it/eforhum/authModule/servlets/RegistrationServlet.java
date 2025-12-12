@@ -1,16 +1,19 @@
 package it.eforhum.authModule.servlets;
 
 import java.io.IOException;
+import static java.lang.String.format;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import it.eforhum.authModule.daos.UserDAOImp;
-import it.eforhum.authModule.dtos.RegistrationDTOReq;
+import it.eforhum.authModule.dtos.RegistrationReqDTO;
 import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
 import it.eforhum.authModule.utils.OTPUtils;
 import it.eforhum.authModule.utils.PasswordHash;
+import it.eforhum.authModule.utils.RateLimitingUtils;
 import it.eforhum.authModule.utils.TokenStore;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -22,9 +25,9 @@ import jakarta.servlet.http.HttpServletResponse;
 public class RegistrationServlet extends HttpServlet{
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    private static final Dotenv dotenv = Dotenv.load();
     private TokenStore tokenStore = TokenStore.getInstance();
-    private UserDAOImp userDao = new UserDAOImp();
+    private static final UserDAOImp userDao = new UserDAOImp();
+    private static final Logger logger = Logger.getLogger(RegistrationServlet.class.getName());
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -32,7 +35,7 @@ public class RegistrationServlet extends HttpServlet{
         
         response.setContentType("text/html;charset=UTF-8");
         String body = new String(request.getInputStream().readAllBytes());
-        RegistrationDTOReq registrationDTO = objectMapper.readValue(body, RegistrationDTOReq.class);
+        RegistrationReqDTO registrationDTO = objectMapper.readValue(body, RegistrationReqDTO.class);
 
         String email = registrationDTO.email();
         String password = PasswordHash.crypt(registrationDTO.password());
@@ -40,11 +43,14 @@ public class RegistrationServlet extends HttpServlet{
         String surname = registrationDTO.lastName();
 
         if(userDao.getByEmail(email) != null){
+            logger.log(Level.WARNING, format("Registration attempt with existing email: %s", email));
+            RateLimitingUtils.recordFailedAttempt(request.getRemoteAddr());
             response.setStatus(400);
             return;
         }
         
         User user = userDao.create(email, password, name, surname);
+
 
         if(user != null){
             
@@ -65,6 +71,10 @@ public class RegistrationServlet extends HttpServlet{
         }else{
             response.setStatus(400);
         }
+        
+        logger.log(Level.SEVERE, format("Failed to create response after registration for email: %s", email));
+        response.setStatus(400);
+        
 
     }
 

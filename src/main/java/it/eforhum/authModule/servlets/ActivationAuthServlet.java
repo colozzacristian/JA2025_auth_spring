@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import it.eforhum.authModule.daos.TokenDAO;
 import it.eforhum.authModule.daos.UserDAOImp;
 import it.eforhum.authModule.dtos.ActivationDataDTO;
 import it.eforhum.authModule.dtos.TempTokenRespDTO;

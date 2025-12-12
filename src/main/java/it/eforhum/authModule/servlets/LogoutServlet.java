@@ -2,7 +2,6 @@ package it.eforhum.authModule.servlets;
 
 import java.io.IOException;
 
-import it.eforhum.authModule.daos.TokenDAO;
 import it.eforhum.authModule.utils.JWTUtils;
 import it.eforhum.authModule.utils.TokenStore;
 import jakarta.servlet.ServletException;
@@ -14,8 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "LogoutServlet" , urlPatterns = "/token/logout")
 public class LogoutServlet extends HttpServlet{
     
-    TokenStore tokenStore = TokenStore.getInstance();
-    TokenDAO tkDAO = tokenStore.getJwtToken();
+    private static final TokenStore tokenStore = TokenStore.getInstance();
     
     @Override
 	public void doDelete(HttpServletRequest request, HttpServletResponse response)
@@ -25,22 +23,16 @@ public class LogoutServlet extends HttpServlet{
 
         String authHeader = request.getHeader("Authorization");
 
-        if(authHeader == null && !authHeader.startsWith("Bearer ")){
-            response.setStatus(401);
-            return;
-        }
-
         String jwtToken = authHeader.substring(7);
 
-        if(JWTUtils.isTokenSignatureValid(jwtToken)){
+        if(tokenStore.getJwtToken().isTokenValid(jwtToken)){
 
             String email = JWTUtils.getEmailFromToken(jwtToken);
-            tkDAO.invalidateToken(email);
+            tokenStore.getJwtToken().invalidateToken(email);
 
-            response.setStatus(200);
-
-        }else{
-            response.setStatus(400);
         }
+
+        response.setStatus(200);
+        
     }
 }
