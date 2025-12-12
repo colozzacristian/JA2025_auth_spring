@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import it.eforhum.authModule.daos.UserDAOImp;
 import it.eforhum.authModule.dtos.RecoveryMsgReqDTO;
 import it.eforhum.authModule.dtos.RecoveryReqDTO;
@@ -37,7 +36,6 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
     private final UserDAOImp userDAO = new UserDAOImp();
     private final TokenStore tokenStore = TokenStore.getInstance();
     private static final List<String> allowedChannels = List.of("email"); 
-    private static final Dotenv dotenv = Dotenv.load();
     private static final HttpClient httpClient = HttpClient.newHttpClient();
     private static final Logger logger = Logger.getLogger(PasswordRecoveryReqServlet.class.getName());
     
@@ -107,7 +105,7 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
     private int sendRecoveryEmail(RecoveryReqDTO recoveryDTO, Token t,String email){
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URL(format("%s/send/%s", dotenv.get("MESSAGE_SERVICE_URL"), recoveryDTO.channel())).toURI())
+                .uri(new URL(format("%s/send/%s", System.getenv("MESSAGE_SERVICE_URL"), recoveryDTO.channel())).toURI())
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(
                     objectMapper.writeValueAsString(

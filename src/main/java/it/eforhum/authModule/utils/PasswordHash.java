@@ -39,8 +39,6 @@ public class PasswordHash {
         try {
             return toHexString(getSHA(input));
         } catch (NoSuchAlgorithmException e) {
-        // TODO Auto-generated catch block
-            e.printStackTrace();
             return null;
         }
         }

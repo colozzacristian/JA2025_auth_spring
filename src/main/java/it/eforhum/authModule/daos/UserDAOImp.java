@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import it.eforhum.authModule.dtos.LoginReqDTO;
 import it.eforhum.authModule.dtos.RegistrationReqDTO;
 import it.eforhum.authModule.entities.User;
@@ -23,7 +22,6 @@ import it.eforhum.authModule.utils.PasswordHash;
 
 public class UserDAOImp implements UserDAO {
 
-    private static final Dotenv dotenv = Dotenv.load();
     private static final HttpClient httpClient = HttpClient.newHttpClient();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final Logger logger = Logger.getLogger(UserDAOImp.class.getName());
@@ -40,7 +38,7 @@ public class UserDAOImp implements UserDAO {
                 .GET()
                 .timeout(Duration.ofSeconds(200));
 
-        response = sendRequest(format("%s/api/user/getExtended/Email/%s", dotenv.get("BACKOFFICE_SERVICE_URL"), email), request);
+        response = sendRequest(format("%s/api/user/getExtended/Email/%s", System.getenv("BACKOFFICE_SERVICE_URL"), email), request);
 
         if (response.statusCode() != 200) {
             return null;
@@ -76,7 +74,7 @@ public class UserDAOImp implements UserDAO {
             return null;
         }
 
-        response = sendRequest(format("%s/api/user/login", dotenv.get("BACKOFFICE_SERVICE_URL")), request);
+        response = sendRequest(format("%s/api/user/login", System.getenv("BACKOFFICE_SERVICE_URL")), request);
 
         if (response.statusCode() != 200) {
             return null;
@@ -114,7 +112,7 @@ public class UserDAOImp implements UserDAO {
             return null;
         }
 
-        response = sendRequest(format("%s/api/user/create", dotenv.get("BACKOFFICE_SERVICE_URL")), request);
+        response = sendRequest(format("%s/api/user/create", System.getenv("BACKOFFICE_SERVICE_URL")), request);
 
         if (response.statusCode() != 200) {
             return null;
@@ -151,7 +149,7 @@ public class UserDAOImp implements UserDAO {
             logger.log(Level.SEVERE, "Error serializing user object for password change", e);
         }
          
-        response = sendRequest(format("%s/api/user/update", dotenv.get("BACKOFFICE_SERVICE_URL")), request);
+        response = sendRequest(format("%s/api/user/update", System.getenv("BACKOFFICE_SERVICE_URL")), request);
 
         return response != null && response.statusCode() == 200;
     }

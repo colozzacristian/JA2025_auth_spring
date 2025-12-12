@@ -5,14 +5,13 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import it.eforhum.authModule.entities.Token;
 
 public class TokenDAO {
 
     private HashMap<String, Token> token_map;
     private static final Logger logger = Logger.getLogger(TokenDAO.class.getName());
-    private static final int TOKEN_EXPIRY_SECONDS = Integer.parseInt(Dotenv.load().get("token_expiration"));
+    private static final int TOKEN_EXPIRY_SECONDS = Integer.parseInt(System.getenv("token_expiration"));
 
     public TokenDAO() {
         this.token_map = new HashMap<>();
