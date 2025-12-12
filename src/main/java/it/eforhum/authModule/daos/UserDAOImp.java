@@ -146,7 +146,7 @@ public class UserDAOImp implements UserDAO {
         User u = null;
         try(Session session = sessionFactory.openSession()){
            Transaction tr = session.beginTransaction();
-           u = new User(email, password, name, surname, true, LocalDateTime.now(), null);
+           u = new User(email, password, name, surname, false, LocalDateTime.now(), null);
            session.persist(u);
               
             tr.commit();
