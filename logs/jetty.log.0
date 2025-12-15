@@ -1,0 +1,10 @@
+2025-12-15 10:09:22 INFO org.hibernate.Version logVersion HHH000412: Hibernate ORM core version 6.4.0.Final
+2025-12-15 10:09:22 INFO org.hibernate.cache.internal.RegionFactoryInitiator initiateService HHH000026: Second-level cache disabled
+2025-12-15 10:09:22 INFO org.hibernate.c3p0.internal.C3P0ConnectionProvider configure HHH010002: C3P0 using driver: com.mysql.cj.jdbc.Driver at URL: jdbc:mysql://localhost:3306/projectWork
+2025-12-15 10:09:22 INFO org.hibernate.c3p0.internal.C3P0ConnectionProvider configure HHH10001001: Connection properties: {password=****, user=root}
+2025-12-15 10:09:22 INFO org.hibernate.c3p0.internal.C3P0ConnectionProvider configure HHH10001003: Autocommit mode: false
+2025-12-15 10:09:23 INFO org.hibernate.c3p0.internal.C3P0ConnectionProvider configure HHH10001007: JDBC isolation level: <unknown>
+2025-12-15 10:09:23 WARN org.hibernate.engine.jdbc.dialect.internal.DialectFactoryImpl constructDialect HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-12-15 10:09:25 INFO org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator initiateService HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-12-15 10:09:25 INFO org.hibernate.resource.transaction.backend.jdbc.internal.DdlTransactionIsolatorNonJtaImpl getIsolatedConnection HHH10001501: Connection obtained from JdbcConnectionAccess [org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$ConnectionProviderJdbcConnectionAccess@11f13f11] for (non-JTA) DDL execution was not in auto-commit mode; the Connection 'local transaction' will be committed and the Connection will be set into auto-commit mode.
+2025-12-15 10:09:26 INFO it.eforhum.authModule.servlets.LoginServlet doPost generated token for email: andrearomanato06@gmail.com from IP: [0:0:0:0:0:0:0:1]

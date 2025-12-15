@@ -1,11 +1,10 @@
 package it.eforhum.authModule.utils;
 
+import static java.lang.String.format;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.logging.Logger;
 import java.util.logging.Level;
-
-import static java.lang.String.format;
+import java.util.logging.Logger;
 
 import it.eforhum.authModule.entities.RateLimiting;
 

@@ -44,7 +44,5 @@ public class GetEmailFromToken extends HttpServlet{
         }else{
             response.setStatus(400);
         }
-
     }
-
 }

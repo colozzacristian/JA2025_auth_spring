@@ -28,6 +28,7 @@ public class LoginServlet extends HttpServlet{
     private final static UserDAOImp userDAO = new UserDAOImp();
 
     private final static Logger logger = Logger.getLogger(LoginServlet.class.getName());
+    
 
     private final static TokenStore tokenStore = TokenStore.getInstance();
     
@@ -56,6 +57,8 @@ public class LoginServlet extends HttpServlet{
             Token t = JWTUtils.generateJWT(u);
             tokenStore.getJwtToken().saveToken(t);
 
+            //System.out.println(t.getToken());
+
             response.getWriter().write(mapper.writeValueAsString(new JWTRespDTO(t.getToken())));
             
         }else{
@@ -75,6 +78,7 @@ public class LoginServlet extends HttpServlet{
 
         tokenStore.getJwtToken().saveToken(t);
         logger.log(Level.INFO, format("generated token for email: %s from IP: %s", email, request.getRemoteAddr()));
+        
         response.getWriter().write(mapper.writeValueAsString(new JWTRespDTO(t.getToken())));
         
     }
