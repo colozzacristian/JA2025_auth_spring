@@ -8,7 +8,6 @@ import it.eforhum.authModule.daos.UserDAOImp;
 import it.eforhum.authModule.dtos.ActivationDataDTO;
 import it.eforhum.authModule.dtos.TempTokenRespDTO;
 import it.eforhum.authModule.entities.Token;
-
 import it.eforhum.authModule.entities.User;
 import it.eforhum.authModule.utils.JWTUtils;
 import it.eforhum.authModule.utils.TokenStore;
@@ -18,7 +17,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet(name="ActivationAuthServlet", urlPatterns="/activate/authenticate")
+@WebServlet(name="ActivationAuthServlet", urlPatterns="/activation/auth")
 public class ActivationAuthServlet extends HttpServlet{
 
     private ObjectMapper mapper = new ObjectMapper();

@@ -11,17 +11,21 @@ import java.time.Duration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import it.eforhum.authModule.daos.TokenDAO;
 import it.eforhum.authModule.daos.UserDAOImp;
-import it.eforhum.authModule.dtos.ActivationDataDTO;
 import it.eforhum.authModule.dtos.EmailReqDTO;
+import it.eforhum.authModule.dtos.RecoveryRequestDTO;
+import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
+import it.eforhum.authModule.utils.OTPUtils;
+import it.eforhum.authModule.utils.TokenStore;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet(name="ActivationReqServlet", urlPatterns="/activate")
+@WebServlet(name="ActivationReqServlet", urlPatterns="/activation")
 public class ActivationReqServlet extends HttpServlet{
 
     private ObjectMapper mapper = new ObjectMapper();
@@ -34,15 +38,20 @@ public class ActivationReqServlet extends HttpServlet{
     throws  ServletException, IOException{
         
         String body = new String(request.getInputStream().readAllBytes());
-        ActivationDataDTO activationData = mapper.readValue(body, ActivationDataDTO.class);
+        RecoveryRequestDTO activationData = mapper.readValue(body, RecoveryRequestDTO.class);
         
-        User u = userDAO.getByEmail(activationData.email());
+        User u = userDAO.getByEmail(activationData.recepient());
         
         if(u == null){
             return;
         }
 
-        int status = sendActivationCode(activationData.OTP(), activationData.email());
+        Token otp = OTPUtils.generateOTP(u);
+        TokenStore tkStore = TokenStore.getInstance();
+        TokenDAO tDAO = tkStore.getOtpToken();
+        tDAO.saveToken(otp);
+
+        int status = sendActivationCode(otp, activationData.recepient());
 
         if(status == 200){
             response.setStatus(200);
@@ -53,7 +62,7 @@ public class ActivationReqServlet extends HttpServlet{
         response.getWriter().write("An error occoured while sending the email with the activation code");
     }
 
-    protected int sendActivationCode(String token ,String email){
+    protected int sendActivationCode(Token token ,String email){
         HttpClient httpClient = HttpClient.newHttpClient();
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -63,7 +72,7 @@ public class ActivationReqServlet extends HttpServlet{
                     mapper.writeValueAsString(new EmailReqDTO(
                             email,
                             "Account activation code",
-                            getEmailBody(token)
+                            getEmailBody(token.getToken())
                         )
                     )))
                     .timeout(Duration.ofSeconds(200))

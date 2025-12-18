@@ -17,11 +17,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
 import it.eforhum.authModule.daos.UserDAOImp;
 import it.eforhum.authModule.dtos.EmailReqDTO;
-import it.eforhum.authModule.dtos.RecoveryReqDTO;
+import it.eforhum.authModule.dtos.RecoveryRequestDTO;
 import it.eforhum.authModule.entities.Token;
 import it.eforhum.authModule.entities.User;
 import it.eforhum.authModule.utils.OTPUtils;
-import it.eforhum.authModule.utils.RateLimitingUtils;
 import it.eforhum.authModule.utils.TokenStore;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -45,27 +44,23 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
         throws ServletException, IOException {
         
-        RecoveryReqDTO recoveryDTO = parseRequest(req, resp);
+        RecoveryRequestDTO recoveryDTO = parseRequest(req, resp);
         if(recoveryDTO == null) {
             return;
         }
 
-        User u = findUserByContact(recoveryDTO.channel(), recoveryDTO.contact());
+        User u = userDAO.getByEmail(recoveryDTO.recepient());
         
         
-        if(u == null) {
-            logger.log(Level.WARNING, format("Password recovery attempt for non-existent user/channel via %s: %s from IP: %s", recoveryDTO.channel(), recoveryDTO.contact(), req.getRemoteAddr()));
-            RateLimitingUtils.recordFailedAttempt(req.getRemoteAddr());
-            return;
-        }
+
         
         Token t = OTPUtils.generateOTP(u);
         tokenStore.getOtpToken().saveToken(t);
 
-        int status = sendRecoveryEmail(recoveryDTO,t, u.getEmail());
+        int status = sendRecoveryEmail(t, u.getEmail());
 
         if(status == 200) {
-            logger.log(Level.INFO, format("Sent recovery message to user: %s via %s", u.getEmail(), recoveryDTO.channel()));
+            logger.log(Level.INFO, format("Sent recovery message to user: %s", u.getEmail()));
             resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }
@@ -86,30 +81,30 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
         return u;
     }
 
-    private RecoveryReqDTO parseRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        RecoveryReqDTO recoveryDTO;
+    private RecoveryRequestDTO parseRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        RecoveryRequestDTO recoveryDTO;
         try{
-            recoveryDTO = objectMapper.readValue(req.getInputStream(), RecoveryReqDTO.class);
+            recoveryDTO = objectMapper.readValue(req.getInputStream(), RecoveryRequestDTO.class);
         }catch(IOException e){
             logger.log(Level.WARNING, format("Failed to parse recovery request: %s", e.getMessage()));
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return null;
         }
 
-        if(!allowedChannels.contains(recoveryDTO.channel())) {
-            logger.log(Level.WARNING, format("Unsupported recovery channel used from IP: %s", req.getRemoteAddr()));
-            resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-            resp.getWriter().write("Channel not supported");
-            return null;
-        }
+        // if(!allowedChannels.contains(recoveryDTO.channel())) {
+        //     logger.log(Level.WARNING, format("Unsupported recovery channel used from IP: %s", req.getRemoteAddr()));
+        //     resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        //     resp.getWriter().write("Channel not supported");
+        //     return null;
+        // }
 
         return recoveryDTO;
     }
 
-    private int sendRecoveryEmail(RecoveryReqDTO recoveryDTO, Token t,String email){
+    private int sendRecoveryEmail(Token t,String email){
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URL(format("%s/send/%s", dotenv.get("MESSAGE_SERVICE_URL"), recoveryDTO.channel())).toURI())
+                .uri(new URL(format("%s/send/%s", dotenv.get("MESSAGE_SERVICE_URL"), "email")).toURI())
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(
                     objectMapper.writeValueAsString(
@@ -121,8 +116,7 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
                     .timeout(Duration.ofSeconds(200))
                     .build();
 
-                    System.out.println(dotenv.get("MESSAGE_SERVICE_URL"));
-                    System.out.println("CHANNEL METHOD: " + recoveryDTO.channel());
+                    
 
             HttpResponse<String> response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
             return response.statusCode();

@@ -81,7 +81,7 @@ public class RegistrationServlet extends HttpServlet{
     private int sendOtpToken(Token t, User u){
 
         ActivationReqServlet servlet = new ActivationReqServlet();
-        int status = servlet.sendActivationCode(t.getToken() , u.getEmail() );
+        int status = servlet.sendActivationCode(t , u.getEmail() );
 
         if(status == 200){
             return status;
