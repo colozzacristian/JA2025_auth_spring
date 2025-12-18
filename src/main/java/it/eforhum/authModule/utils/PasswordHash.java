@@ -7,16 +7,22 @@ import java.security.NoSuchAlgorithmException;
 
 public class PasswordHash {
 
-    public static byte[] getSHA(String input) throws NoSuchAlgorithmException
-    {
-    // Static getInstance method is called with hashing SHA
+    private PasswordHash() {
+        throw new IllegalStateException("Utility class");
+    }
+
+    public static byte[] getSHA(String input) throws NoSuchAlgorithmException{
+
     MessageDigest md = MessageDigest.getInstance("SHA-256");
+
+    
 
     // digest() method called
     // to calculate message digest of an input
     // and return array of byte
     return md.digest(input.getBytes(StandardCharsets.UTF_8));
     }
+
 
     public static String toHexString(byte[] hash)
     {
@@ -39,8 +45,6 @@ public class PasswordHash {
         try {
             return toHexString(getSHA(input));
         } catch (NoSuchAlgorithmException e) {
-        // TODO Auto-generated catch block
-            e.printStackTrace();
             return null;
         }
         }
