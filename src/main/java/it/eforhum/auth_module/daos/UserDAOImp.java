@@ -151,7 +151,7 @@ public class UserDAOImp implements UserDAO {
             logger.log(Level.SEVERE, "Error serializing user object for password change", e);
         }
          
-        response = sendRequest(format("%s/api/user/update", System.getenv("BACKOFFICE_SERVICE_URL")), request);
+        response = sendRequest(format("%s/api/user/update", BACKOFFICE_SERVICE_URL), request);
 
         return response != null && response.statusCode() == 200;
     }
@@ -177,7 +177,7 @@ public class UserDAOImp implements UserDAO {
             logger.log(Level.SEVERE, "Error serializing user object for password change", e);
         }
          
-        response = sendRequest(format("%s/api/user/update", System.getenv("BACKOFFICE_SERVICE_URL")), request);
+        response = sendRequest(format("%s/api/user/update", BACKOFFICE_SERVICE_URL), request);
 
         return response != null && response.statusCode() == 200;
     }
