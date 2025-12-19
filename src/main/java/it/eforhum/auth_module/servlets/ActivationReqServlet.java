@@ -2,15 +2,17 @@ package it.eforhum.auth_module.servlets;
 
 import java.io.IOException;
 import static java.lang.String.format;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import it.eforhum.auth_module.daos.TokenDAO;
 import it.eforhum.auth_module.daos.UserDAOImp;
 import it.eforhum.auth_module.dtos.EmailReqDTO;
@@ -25,15 +27,11 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 @WebServlet(name="ActivationReqServlet", urlPatterns="/activation")
 public class ActivationReqServlet extends HttpServlet{
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private static final Dotenv dotenv = Dotenv.load();
     private static final UserDAOImp userDAO = new UserDAOImp();
     private static final Logger logger = Logger.getLogger(ActivationReqServlet.class.getName());
     @Override
@@ -75,7 +73,7 @@ public class ActivationReqServlet extends HttpServlet{
         HttpClient httpClient = HttpClient.newHttpClient();
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URL(format("%s/send/%s", dotenv.get("MESSAGE_SERVICE_URL"), "email")).toURI())
+                .uri(new URL(format("%s/send/%s", System.getenv("MESSAGE_SERVICE_URL"), "email")).toURI())
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(
                     mapper.writeValueAsString(new EmailReqDTO(
@@ -89,7 +87,12 @@ public class ActivationReqServlet extends HttpServlet{
 
             HttpResponse<String> response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
             return response.statusCode();
-        } catch (Exception e) {
+        }catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.log(Level.SEVERE, "IOException while sending activation email", e);
+            return 500;
+
+        } catch (IOException | URISyntaxException e) {
 
             return 500;
         }

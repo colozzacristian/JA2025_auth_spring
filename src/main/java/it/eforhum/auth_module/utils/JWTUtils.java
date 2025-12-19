@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 
 import javax.crypto.SecretKey;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import it.eforhum.auth_module.entities.Token;
@@ -16,12 +15,12 @@ import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 
 public class JWTUtils {
 
-    public static final int TOKEN_EXPIRATION = Integer.parseInt(Dotenv.load().get("token_expiration"));
+    public static final int TOKEN_EXPIRATION = Integer.parseInt(System.getenv("token_expiration"));
     private static final SecretKey SECRET_KEY;
 
     static {
         
-        SECRET_KEY = hmacShaKeyFor(Dotenv.load().get("JWT_SECRET").getBytes());
+        SECRET_KEY = hmacShaKeyFor(System.getenv("JWT_SECRET").getBytes());
     }
 
     private JWTUtils() {

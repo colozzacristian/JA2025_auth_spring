@@ -51,7 +51,7 @@ public class User{
         joinColumns = {@JoinColumn(name = "user_id")},
         inverseJoinColumns = {@JoinColumn(name = "group_id")}
     )
-    private Set<Group> groups;
+    private Set<String> groups;
 
 
     public User(){}
@@ -129,11 +129,11 @@ public class User{
         this.lastName = lastName;
     }
 
-    public Set<Group> getGroups() {
+    public Set<String> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<Group> groups) {
+    public void setGroups(Set<String> groups) {
         this.groups = groups;
     }
 
@@ -141,7 +141,7 @@ public class User{
         if (groups == null) {
             return new String[0];
         }
-        return groups.stream().map(Group::getName).toArray(String[]::new);
+        return groups.stream().toArray(String[]::new);
     }
 
 }

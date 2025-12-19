@@ -2,14 +2,12 @@ package it.eforhum.auth_module.entities;
 
 import java.time.LocalDateTime;
 
-import io.github.cdimascio.dotenv.Dotenv;
-
 public class RateLimiting {
     private int failedRequests;
     private LocalDateTime lastFailedRequest;
 
-    public static final int TIME_WINDOW_SECONDS = Integer.parseInt(Dotenv.load().get("backoff_time_seconds"));
-    public static final int MAX_FAILED_REQUESTS = Integer.parseInt(Dotenv.load().get("max_failed_requests"));
+    public static final int TIME_WINDOW_SECONDS = Integer.parseInt(System.getenv("backoff_time_seconds"));
+    public static final int MAX_FAILED_REQUESTS = Integer.parseInt(System.getenv("max_failed_requests"));
 
     public RateLimiting() {
         this.failedRequests = 1;
