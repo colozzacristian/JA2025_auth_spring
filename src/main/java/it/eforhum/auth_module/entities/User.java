@@ -1,72 +1,51 @@
 package it.eforhum.auth_module.entities;
 
-import java.time.LocalDateTime;
+
 import java.util.Set;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
-@Entity
-@Table(name = "users")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class User{
     
-    @Id
-    @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonAlias("userID")
     private Long userId;
 
-    @Column(name = "Email" , nullable = false, unique=true)
     private String email;
 
-    @Column(name = "PasswordHash" ,nullable = false)
+    @JsonAlias("password")
     private String passwordHash;
 
-    @Column(name="FirstName")
     private String firstName;
 
-    @Column(name = "LastName")
     private String lastName;
-
-    @Column(name = "Active")
     private boolean active;
 
-    @Column(name = "CreationDate", nullable=false)
-    private LocalDateTime creationDate;
-
-    @Column(name = "LastAccessDate")
-    private LocalDateTime lastAccessDate;
-
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "UserGroups",
-        joinColumns = {@JoinColumn(name = "user_id")},
-        inverseJoinColumns = {@JoinColumn(name = "group_id")}
-    )
     private Set<String> groups;
 
 
     public User(){}
 
-    public User(String email, String passwordHash, String firstName, String lastName, boolean active, LocalDateTime creationDate, LocalDateTime lastAccess){
+    public User(String email, String passwordHash, String firstName, String lastName, boolean active){
         this.email = email;
         this.passwordHash = passwordHash;
         this.firstName = firstName;
         this.lastName = lastName;
         this.active = active;
-        this.creationDate = creationDate;
-        this.lastAccessDate = lastAccess;
+     
     }
 
+    public User(Long id,String email, String passwordHash, String firstName, String lastName, boolean active){
+        this.userId = id;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.active = active;
 
+    }  
 
 
     public Long getUserId() {
@@ -97,21 +76,6 @@ public class User{
         this.active = active;
     }
 
-    public LocalDateTime getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(LocalDateTime creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public LocalDateTime getLastAccessDate() {
-        return lastAccessDate;
-    }
-
-    public void setLastAccessDate(LocalDateTime lastAccessDate) {
-        this.lastAccessDate = lastAccessDate;
-    }
 
     public String getFirstName() {
         return firstName;
@@ -141,7 +105,7 @@ public class User{
         if (groups == null) {
             return new String[0];
         }
-        return groups.stream().toArray(String[]::new);
+        return groups.toArray(new String[0]);
     }
 
 }

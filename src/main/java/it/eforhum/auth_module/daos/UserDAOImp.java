@@ -13,11 +13,16 @@ import java.time.Duration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import it.eforhum.auth_module.entities.User;
 import it.eforhum.auth_module.utils.PasswordHash;
 import it.eforhum.auth_module.dtos.LoginReqDTO;
 import it.eforhum.auth_module.dtos.RegistrationReqDTO;
+import it.eforhum.auth_module.dtos.UpdateReqDTO;
+import it.eforhum.auth_module.dtos.ActivationReqDTO;
 
 
 public class UserDAOImp implements UserDAO {
@@ -25,7 +30,10 @@ public class UserDAOImp implements UserDAO {
     private static final HttpClient httpClient = HttpClient.newHttpClient();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final Logger logger = Logger.getLogger(UserDAOImp.class.getName());
-
+    static {
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
+    }
     private static final String BACKOFFICE_SERVICE_URL = System.getenv("BACKOFFICE_SERVICE_URL");
 
     @Override
@@ -35,12 +43,9 @@ public class UserDAOImp implements UserDAO {
         Builder request;
         HttpResponse<String> response;
 
-        request = HttpRequest.newBuilder()
-                .header("Content-Type", "application/json")
-                .GET()
-                .timeout(Duration.ofSeconds(200));
+        request = createBaseRequest().GET();
 
-        response = sendRequest(format("%s/api/user/getExtended/Email/%s", BACKOFFICE_SERVICE_URL, email), request);
+        response = sendRequest(format("%s/api/user/get/email/%s", BACKOFFICE_SERVICE_URL, email), request);
 
         if (response == null || response.statusCode() != 200) {
             return null;
@@ -62,9 +67,7 @@ public class UserDAOImp implements UserDAO {
         Builder request;
         HttpResponse<String> response;
 
-         request = HttpRequest.newBuilder()
-                .header("Content-Type", "application/json")
-                .timeout(Duration.ofSeconds(200));
+         request = createBaseRequest();
         try{
             request.POST(
                 HttpRequest.BodyPublishers.ofString(
@@ -99,9 +102,7 @@ public class UserDAOImp implements UserDAO {
         HttpResponse<String> response;
 
 
-        request = HttpRequest.newBuilder()
-                .header("Content-Type", "application/json")
-                .timeout(Duration.ofSeconds(200));
+        request = createBaseRequest();
 
         try{
             request.POST(
@@ -116,7 +117,7 @@ public class UserDAOImp implements UserDAO {
 
         response = sendRequest(format("%s/api/user/create", BACKOFFICE_SERVICE_URL), request);
 
-        if (response == null || response.statusCode() != 200) {
+        if (response == null || response.statusCode() != 201) {
             return null;
         }
         
@@ -135,16 +136,14 @@ public class UserDAOImp implements UserDAO {
         Builder request;
         HttpResponse<String> response;
         u.setPasswordHash(PasswordHash.crypt(newPassword));
+        UpdateReqDTO updateReqDTO = new UpdateReqDTO(u);
 
-
-        request = HttpRequest.newBuilder()
-                .header("Content-Type", "application/json")
-                .timeout(Duration.ofSeconds(200));
+        request = createBaseRequest();
 
         try {
-            request.POST(
+            request.PUT(
                     HttpRequest.BodyPublishers.ofString(
-                        objectMapper.writeValueAsString(u)
+                        objectMapper.writeValueAsString(updateReqDTO)
                     )
                 );
         } catch (IOException e) {
@@ -158,28 +157,46 @@ public class UserDAOImp implements UserDAO {
 
     @Override
     public boolean activateUser(User u){
+
+        
         Builder request;
         HttpResponse<String> response;
-        u.setActive(true);
+    
+        ActivationReqDTO activationReqDTO = new ActivationReqDTO(u.getUserId(), true);
 
-
-        request = HttpRequest.newBuilder()
-                .header("Content-Type", "application/json")
-                .timeout(Duration.ofSeconds(200));
+        request = createBaseRequest();
 
         try {
-            request.POST(
+            request.PUT(
                     HttpRequest.BodyPublishers.ofString(
-                        objectMapper.writeValueAsString(u)
+                        objectMapper.writeValueAsString(activationReqDTO)
                     )
                 );
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Error serializing user object for password change", e);
         }
          
-        response = sendRequest(format("%s/api/user/update", BACKOFFICE_SERVICE_URL), request);
+        response = sendRequest(format("%s/api/user/setActive", BACKOFFICE_SERVICE_URL), request);
 
-        return response != null && response.statusCode() == 200;
+        if(response == null){
+            if(logger.isLoggable(Level.SEVERE))
+                logger.log(Level.SEVERE, format("No response received when activating user: %s", u.getEmail()));
+            return false;
+        }
+
+        if(response.statusCode() != 200){
+            if(logger.isLoggable(Level.SEVERE))
+                logger.log(Level.SEVERE, format("Failed to activate user: %s, status code: %d", u.getEmail(), response.statusCode()));
+            return false;
+        }
+
+        return true;
+    }
+
+    private Builder createBaseRequest(){
+        return HttpRequest.newBuilder()
+                .header("Content-Type", "application/json")
+                .timeout(Duration.ofSeconds(200));
     }
 
 

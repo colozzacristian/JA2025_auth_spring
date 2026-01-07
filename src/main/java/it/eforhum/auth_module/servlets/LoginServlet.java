@@ -36,7 +36,6 @@ public class LoginServlet extends HttpServlet{
 	@Override // TO refactor
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException {
-        response.setContentType("application/json");
         
 		ObjectMapper mapper = new ObjectMapper();
         
@@ -56,30 +55,21 @@ public class LoginServlet extends HttpServlet{
 
         User u = userDAO.login(email, password);
 
-        if(u != null){
-
-            response.setStatus(200);
-            
-            Token t = JWTUtils.generateJWT(u);
-            tokenStore.getJwtTokens().saveToken(t);
-
-            try {
-                response.getWriter().write(mapper.writeValueAsString(new JWTRespDTO(t.getTokenValue())));
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, "IOException while writing JWT to response", e);
-                response.setStatus(500);
-            }
-            
-        }else{
-            if(logger.isLoggable(Level.WARNING))
+        if(u == null){
+             if(logger.isLoggable(Level.WARNING))
                 logger.log(Level.WARNING, format("Failed login attempt for email: %s from IP: %s", email, request.getRemoteAddr()));
             RateLimitingUtils.recordFailedAttempt(request.getRemoteAddr());
             response.setStatus(401);
             return;
         }
-
-        response.setStatus(200);
-            
+        
+        if(!u.isActive()){
+            if(logger.isLoggable(Level.WARNING))
+                logger.log(Level.WARNING, format("Login attempt for inactive user: %s from IP: %s", email, request.getRemoteAddr()));
+            response.setStatus(403);
+            return;
+        }
+        
         Token t = JWTUtils.generateJWT(u);
         if (tokenStore.getJwtTokens().isTokenValid(email)) {
             if(logger.isLoggable(Level.INFO))
@@ -87,16 +77,19 @@ public class LoginServlet extends HttpServlet{
             tokenStore.getJwtTokens().invalidateToken(email);
         }
 
-        tokenStore.getJwtTokens().saveToken(t);
-        if(logger.isLoggable(Level.INFO))
-            logger.log(Level.INFO, format("generated token for email: %s from IP: %s", email, request.getRemoteAddr()));
         try {
             response.getWriter().write(mapper.writeValueAsString(new JWTRespDTO(t.getTokenValue())));
         } catch (IOException e) {
             if(logger.isLoggable(Level.SEVERE))
                 logger.log(Level.SEVERE, "IOException while writing JWT to response", e);
             response.setStatus(500);
+            return;
         }
+
+        tokenStore.getJwtTokens().saveToken(t);
+        if(logger.isLoggable(Level.INFO))
+            logger.log(Level.INFO, format("generated token for email: %s from IP: %s", email, request.getRemoteAddr()));
+        response.setStatus(200);
         
     }
 }

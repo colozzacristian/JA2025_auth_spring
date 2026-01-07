@@ -47,9 +47,12 @@ public class ActivationReqServlet extends HttpServlet{
             return;
         }
         
-        User u = userDAO.getByEmail(activationData.recepient());
+        User u = userDAO.getByEmail(activationData.recipient());
         
         if(u == null){
+            response.setStatus(400);
+            if(logger.isLoggable(Level.WARNING))
+                logger.log(Level.WARNING, format("Activation request for non-existing user: %s", activationData.recipient()));
             return;
         }
 
@@ -58,7 +61,7 @@ public class ActivationReqServlet extends HttpServlet{
         TokenDAO tDAO = tkStore.getOtpTokens();
         tDAO.saveToken(otp);
 
-        int status = sendActivationCode(otp, activationData.recepient());
+        int status = sendActivationCode(otp, activationData.recipient());
 
         if(status == 200){
             response.setStatus(200);
@@ -93,7 +96,6 @@ public class ActivationReqServlet extends HttpServlet{
             return 500;
 
         } catch (IOException | URISyntaxException e) {
-
             return 500;
         }
     }
@@ -104,7 +106,7 @@ public class ActivationReqServlet extends HttpServlet{
                 <body>
                     <p>This is your account activation code</p>
                     <h1>%s</h1>
-                    <p>Insert this code at: /activate/authenticate</p>
+                    <p>Insert this code at: <a href="http://188.40.183.188:4200/activate/authenticate">this page</a></p>
                 </body>
             </html>
             """, token);

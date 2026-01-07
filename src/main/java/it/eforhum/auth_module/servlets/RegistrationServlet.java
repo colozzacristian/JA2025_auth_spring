@@ -48,41 +48,70 @@ public class RegistrationServlet extends HttpServlet{
         String name = registrationDTO.firstName();
         String surname = registrationDTO.lastName();
 
-        if(userDao.getByEmail(email) != null){
-            if(logger.isLoggable(Level.WARNING))
-                logger.log(Level.WARNING, format("Registration attempt with existing email: %s", email));
-            RateLimitingUtils.recordFailedAttempt(request.getRemoteAddr());
+        User u = userDao.getByEmail(email);
+
+        if(!canActivate(u, email, registrationDTO.password())){
             response.setStatus(400);
+            RateLimitingUtils.recordFailedAttempt(request.getRemoteAddr());
             return;
         }
         
-        User user = userDao.create(email, password, name, surname);
+        if( u == null){
 
+            u = userDao.create(email, password, name, surname);
 
-        if(user != null){
-            
-            Token t = OTPUtils.generateOTP(user);
-            tokenStore.getOtpTokens().saveToken(t);
-
-            int status = 0;
-            if(t != null){
-                status = sendOtpToken(t, user);
-            }
-
-            if(status == 200){
-                response.setStatus(200);
+            if(u == null){
+                if(logger.isLoggable(Level.WARNING))
+                    logger.log(Level.WARNING, format("Failed to create user during registration for email: %s", email));
+                response.setStatus(400);
                 return;
             }
-            
-        }else{
+        }
+        
+        Token t = OTPUtils.generateOTP(u);
+        
+
+        int status = 0;
+        if(t == null){
+            if(logger.isLoggable(Level.SEVERE))
+                logger.log(Level.SEVERE, format("Failed to generate OTP token after registration for email: %s", email));
             response.setStatus(400);
             return;
         }
+
+        status = sendOtpToken(t, u);
+
+
+        if(status == 200){
+            tokenStore.getOtpTokens().saveToken(t);
+            response.setStatus(200);
+            return;
+        }            
+    
         if(logger.isLoggable(Level.SEVERE))
-            logger.log(Level.SEVERE, format("Failed to create response after registration for email: %s", email));
+            logger.log(Level.SEVERE, format("Failed to send OTP token after registration for email: %s", email));
+
         response.setStatus(400);
         
 
+    }
+
+    private boolean canActivate(User u, String email,String password){
+
+        if(u != null && u.isActive()) {
+            if(logger.isLoggable(Level.WARNING))
+                logger.log(Level.WARNING, format("Registration attempt with existing email: %s", email));
+            return false;
+        }
+
+        if(u!=null && !u.isActive() && userDao.login(email, password) == null){
+            if(logger.isLoggable(Level.WARNING))
+                logger.log(Level.WARNING, format("Registration attempt with existing but inactive email and wrong password: %s", email));
+            return false;
+        }
+
+        return true;
+        
     }
 
     private int sendOtpToken(Token t, User u){

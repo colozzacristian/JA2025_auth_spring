@@ -46,7 +46,7 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
             return;
         }
 
-        User u = userDAO.getByEmail(recoveryDTO.recepient());    
+        User u = userDAO.getByEmail(recoveryDTO.recipient());    
         Token t = OTPUtils.generateOTP(u);
         tokenStore.getOtpTokens().saveToken(t);
 
@@ -133,7 +133,7 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
                     <body>
                         <p>This is your password recovery code</p>
                         <h1>%s</h1>
-                        <p>Insert this code at: /recovery/auth</p>
+                        <p>Insert this code at: <a href="http://188.40.183.188:4200/recovery/auth">this page</a></p>
                     </body>
                 </html>
         """, t);
