@@ -1,4 +1,4 @@
-
+import static java.lang.String.format;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -10,33 +10,33 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import it.eforhum.authModule.daos.UserDAOImp;
-import it.eforhum.authModule.dtos.GroupsListRespDTO;
-import it.eforhum.authModule.dtos.InGroupsRespDTO;
-import it.eforhum.authModule.entities.Token;
-import it.eforhum.authModule.entities.User;
-import it.eforhum.authModule.servlets.GroupsCheckServlet;
-import it.eforhum.authModule.utils.JWTUtils;
-import it.eforhum.authModule.utils.TokenStore;
+import it.eforhum.auth_module.daos.UserDAOImp;
+import it.eforhum.auth_module.dtos.GroupsListRespDTO;
+import it.eforhum.auth_module.dtos.InGroupsRespDTO;
+import it.eforhum.auth_module.entities.Token;
+import it.eforhum.auth_module.entities.User;
+import it.eforhum.auth_module.servlets.GroupsCheckServlet;
+import it.eforhum.auth_module.utils.JWTUtils;
+import it.eforhum.auth_module.utils.TokenStore;
 
 
 
 
 public class GroupsCheckTest {
 
-    private UserDAOImp userDAO = new UserDAOImp();
-    private GroupsCheckServlet servlet = new GroupsCheckServlet();
-    private TokenStore tokenStore = TokenStore.getInstance();
+    private final UserDAOImp userDAO = new UserDAOImp();
+    private final GroupsCheckServlet servlet = new GroupsCheckServlet();
+    private final TokenStore tokenStore = TokenStore.getInstance();
     private Token jwtToken;
     private String[] expectedGroups;
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Before
     public void setUp() {
-        User User = userDAO.getByEmail("a@a.a");
-        jwtToken = JWTUtils.generateJWT(User);
-        tokenStore.getJwtToken().saveToken(jwtToken);
-        expectedGroups =User.getGroupsForJWT();
+        User user = userDAO.getByEmail("a@a.a");
+        jwtToken = JWTUtils.generateJWT(user);
+        tokenStore.getJwtTokens().saveToken(jwtToken);
+        expectedGroups = user.getGroupsForJWT();
     }
 
     @Test
@@ -45,18 +45,19 @@ public class GroupsCheckTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         
         request.setMethod("GET");
-        request.addHeader("Authorization", "Bearer " + jwtToken.getToken());
+        request.addHeader("Authorization", format("Bearer %s", jwtToken.getTokenValue()));
         try {
             servlet.doGet(request, response); 
         } catch (Exception e) {
             fail("Exception thrown: " + e.getMessage());
         }
 
-        assertEquals(response.getStatus(), 200);
+        assertEquals(200, response.getStatus());
 
         try {
             assertEquals(response.getContentAsString(), objectMapper.writeValueAsString(new GroupsListRespDTO(expectedGroups)));
         } catch (Exception e) {
+            fail("Exception thrown: " + e.getMessage());
         }
 
     }
@@ -70,7 +71,7 @@ public class GroupsCheckTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         
         request.setMethod("GET");
-        request.addHeader("Authorization", "Bearer " + jwtToken.getToken());
+        request.addHeader("Authorization", "Bearer " + jwtToken.getTokenValue());
         request.addParameter("g", "USER");
         try {
             servlet.doGet(request, response); 
@@ -78,10 +79,11 @@ public class GroupsCheckTest {
             fail("Exception thrown: " + e.getMessage());
         }
 
-        assertEquals(response.getStatus(), 200);
+        assertEquals(200, response.getStatus());
         try {
             assertTrue(response.getContentAsString().contains("\"isInGroups\":true"));
         } catch (Exception e) {
+            fail("Exception thrown: " + e.getMessage());
         }
         
     }
@@ -92,7 +94,7 @@ public class GroupsCheckTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         
         request.setMethod("GET");
-        request.addHeader("Authorization", "Bearer " + jwtToken.getToken());
+        request.addHeader("Authorization", format("Bearer %s", jwtToken.getTokenValue()));
         request.addParameter("g", "USER,,ADMIN");
         try {
             servlet.doGet(request, response); 
@@ -100,10 +102,11 @@ public class GroupsCheckTest {
             fail("Exception thrown: " + e.getMessage());
         }
 
-        assertEquals(response.getStatus(), 200);
+        assertEquals(200, response.getStatus());
         try {
             assertEquals(response.getContentAsString(), objectMapper.writeValueAsString(new InGroupsRespDTO(false)));
         } catch (Exception e) {
+            fail("Exception thrown: " + e.getMessage());
         }
     }
 
@@ -112,7 +115,7 @@ public class GroupsCheckTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         
         request.setMethod("GET");
-        request.addHeader("Authorization", "Bearer a" + jwtToken.getToken());
+        request.addHeader("Authorization", format("Bearer a%s", jwtToken.getTokenValue()));
         request.addParameter("g", "USER,");
         try {
             servlet.doGet(request, response); 
@@ -120,13 +123,12 @@ public class GroupsCheckTest {
             fail("Exception thrown: " + e.getMessage());
         }
 
-        assertEquals(response.getStatus(), 401);
+        assertEquals(401, response.getStatus());
         try {
-        assertEquals(response.getContentAsString(), "");
+            assertEquals("", response.getContentAsString());
             
         } catch (Exception e) {
-            System.out.println("Unexpected exception in testGroupsWrongToken:");
-            System.exit(-1);
+            fail("Exception thrown: " + e.getMessage());
         }
         
     }

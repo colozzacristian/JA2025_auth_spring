@@ -6,31 +6,19 @@ WORKDIR /build
 # Copy the pom.xml and source code
 COPY pom.xml .
 COPY src ./src
-COPY .env .
 
 # Build the application
-RUN mvn clean package -DskipTests
+RUN mvn install package -DskipTests
 
 # Stage 2: Runtime stage
-FROM eclipse-temurin:17-jre-jammy
-
-WORKDIR /app
-
-# Install Jetty
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    default-jre-headless \
-    ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+FROM jetty:11.0-jre17
 
 # Copy the built WAR file from the builder stage
-COPY --from=builder /build/target/authModule.war /app/authModule.war
+COPY --from=builder /build/target/authModule.war /var/lib/jetty/webapps/authModule.war
 
 # Expose the default port for the application
-EXPOSE 8081
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8081/authModule || exit 1
-# Run the application with Jetty
-CMD ["java", "-jar", "/app/authModule.war"]
+    CMD curl -f http://localhost:8080/authModule || exit 1

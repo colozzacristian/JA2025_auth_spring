@@ -11,7 +11,7 @@
   <!-- CORS Filter -->
   <filter>
     <filter-name>CORSfilter</filter-name>
-    <filter-class>it.eforhum.authModule.filters.CORSfilter</filter-class>
+    <filter-class>it.eforhum.auth_module.filters.CORSfilter</filter-class>
   </filter>
 
   <filter-mapping>
