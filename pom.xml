@@ -80,6 +80,8 @@
 
 
 
+
+
   </dependencies>
 
   <build>
@@ -121,6 +123,10 @@
           <version>12.0.30</version>
           <configuration>
           <scanIntervalSeconds>10</scanIntervalSeconds>
+          <httpConnector>
+            <port>8083</port>
+          </httpConnector>
+            
             <webapp>
             <contextPath>/authModule</contextPath>
           </webapp>

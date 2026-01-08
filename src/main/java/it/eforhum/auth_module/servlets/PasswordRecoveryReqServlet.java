@@ -33,7 +33,6 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final UserDAOImp userDAO = new UserDAOImp();
     private static final TokenStore tokenStore = TokenStore.getInstance();
-    //private static final List<String> allowedChannels = List.of("email"); 
     private static final HttpClient httpClient = HttpClient.newHttpClient();
     private static final Logger logger = Logger.getLogger(PasswordRecoveryReqServlet.class.getName());
     
@@ -76,27 +75,10 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
             return null;
         }
 
-        /*  
-        if(!allowedChannels.contains(recoveryDTO.channel())) {
-             logger.log(Level.WARNING, format("Unsupported recovery channel used from IP: %s", req.getRemoteAddr()));
-             resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-             resp.getWriter().write("Channel not supported");
-             return null;
-        }*/
-
         return recoveryDTO;
     }
 
-    /* 
-    private User findUserByContact(String channel, String contact) {
-        User u;
-        u = switch (channel) {
-            case "email" -> userDAO.getByEmail(contact);
-            default -> null;
-        };
-        return u;
-    }
-    */
+
 
     private int sendRecoveryEmail(Token t,String email){
         try {
@@ -130,13 +112,13 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
     public String getEmailBody(String t){
         return format("""
             <html>
-                    <body>
-                        <p>This is your password recovery code</p>
-                        <h1>%s</h1>
-                        <p>Insert this code at: <a href="http://188.40.183.188:4200/recovery/auth">this page</a></p>
-                    </body>
-                </html>
-        """, t);
+                <body>
+                    <p>This is your password recovery code</p>
+                    <h1>%s</h1>
+                    <p>Insert this code at: <a href="http://188.40.183.188:4200/recovery/authenticate">this page</a></p>
+                </body>
+            </html>
+            """, t);
     }
     
 }

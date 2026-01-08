@@ -13,7 +13,6 @@ import it.eforhum.auth_module.dtos.LoginReqDTO;
 import it.eforhum.auth_module.entities.Token;
 import it.eforhum.auth_module.entities.User;
 import it.eforhum.auth_module.utils.JWTUtils;
-import it.eforhum.auth_module.utils.PasswordHash;
 import it.eforhum.auth_module.utils.RateLimitingUtils;
 import it.eforhum.auth_module.utils.TokenStore;
 import jakarta.servlet.ServletException;
@@ -50,10 +49,8 @@ public class LoginServlet extends HttpServlet{
         }
 
         String email = loginDTO.email();
-        
-        String password = PasswordHash.crypt(loginDTO.password());
 
-        User u = userDAO.login(email, password);
+        User u = userDAO.login(email, loginDTO.password());
 
         if(u == null){
              if(logger.isLoggable(Level.WARNING))

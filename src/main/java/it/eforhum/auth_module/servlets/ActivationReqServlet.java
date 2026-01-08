@@ -2,12 +2,6 @@ package it.eforhum.auth_module.servlets;
 
 import java.io.IOException;
 import static java.lang.String.format;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,11 +9,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.eforhum.auth_module.daos.TokenDAO;
 import it.eforhum.auth_module.daos.UserDAOImp;
-import it.eforhum.auth_module.dtos.EmailReqDTO;
 import it.eforhum.auth_module.dtos.RecoveryRequestDTO;
 import it.eforhum.auth_module.entities.Token;
 import it.eforhum.auth_module.entities.User;
 import it.eforhum.auth_module.utils.OTPUtils;
+import it.eforhum.auth_module.utils.SendUtils;
 import it.eforhum.auth_module.utils.TokenStore;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -61,7 +55,7 @@ public class ActivationReqServlet extends HttpServlet{
         TokenDAO tDAO = tkStore.getOtpTokens();
         tDAO.saveToken(otp);
 
-        int status = sendActivationCode(otp, activationData.recipient());
+        int status = SendUtils.sendActivationCode(otp, activationData.recipient());
 
         if(status == 200){
             response.setStatus(200);
@@ -72,44 +66,5 @@ public class ActivationReqServlet extends HttpServlet{
         
     }
 
-    protected int sendActivationCode(Token token ,String email){
-        HttpClient httpClient = HttpClient.newHttpClient();
-        try {
-            HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URL(format("%s/send/%s", System.getenv("MESSAGE_SERVICE_URL"), "email")).toURI())
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(
-                    mapper.writeValueAsString(new EmailReqDTO(
-                            email,
-                            "Account activation code",
-                            getEmailBody(token.getTokenValue())
-                        )
-                    )))
-                    .timeout(Duration.ofSeconds(200))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request,HttpResponse.BodyHandlers.ofString());
-            return response.statusCode();
-        }catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            logger.log(Level.SEVERE, "IOException while sending activation email", e);
-            return 500;
-
-        } catch (IOException | URISyntaxException e) {
-            return 500;
-        }
-    }
-
-    private String getEmailBody(String token){
-        return format("""
-            <html>
-                <body>
-                    <p>This is your account activation code</p>
-                    <h1>%s</h1>
-                    <p>Insert this code at: <a href="http://188.40.183.188:4200/activate/authenticate">this page</a></p>
-                </body>
-            </html>
-            """, token);
-    }
-
+    
 }

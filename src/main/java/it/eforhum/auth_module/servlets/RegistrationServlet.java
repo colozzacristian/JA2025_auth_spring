@@ -12,8 +12,8 @@ import it.eforhum.auth_module.dtos.RegistrationReqDTO;
 import it.eforhum.auth_module.entities.Token;
 import it.eforhum.auth_module.entities.User;
 import it.eforhum.auth_module.utils.OTPUtils;
-import it.eforhum.auth_module.utils.PasswordHash;
 import it.eforhum.auth_module.utils.RateLimitingUtils;
+import it.eforhum.auth_module.utils.SendUtils;
 import it.eforhum.auth_module.utils.TokenStore;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -44,9 +44,9 @@ public class RegistrationServlet extends HttpServlet{
         }
 
         String email = registrationDTO.email();
-        String password = PasswordHash.crypt(registrationDTO.password());
         String name = registrationDTO.firstName();
         String surname = registrationDTO.lastName();
+        String password = registrationDTO.password();
 
         User u = userDao.getByEmail(email);
 
@@ -71,7 +71,7 @@ public class RegistrationServlet extends HttpServlet{
         Token t = OTPUtils.generateOTP(u);
         
 
-        int status = 0;
+        int status;
         if(t == null){
             if(logger.isLoggable(Level.SEVERE))
                 logger.log(Level.SEVERE, format("Failed to generate OTP token after registration for email: %s", email));
@@ -116,7 +116,6 @@ public class RegistrationServlet extends HttpServlet{
 
     private int sendOtpToken(Token t, User u){
 
-        ActivationReqServlet servlet = new ActivationReqServlet();
-        return servlet.sendActivationCode(t , u.getEmail() );
+        return SendUtils.sendActivationCode(t , u.getEmail() );
     }
 }

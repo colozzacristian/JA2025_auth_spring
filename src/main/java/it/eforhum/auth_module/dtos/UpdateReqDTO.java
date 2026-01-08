@@ -1,28 +1,20 @@
 package it.eforhum.auth_module.dtos;
 import it.eforhum.auth_module.entities.User;
 
-import java.time.LocalDate;
-
 public class UpdateReqDTO {
-    private long userId;
+    private long userID;
     private String email;
     private String password;
-    private boolean active;
     private String firstName;
     private String lastName;
-    private LocalDate creationDate = null;
-    private LocalDate lastAccessDate = null;
 
     
     public UpdateReqDTO(User u){
-        this.userId = u.getUserId();
+        this.userID = u.getUserId();
         this.email = u.getEmail();
         this.password = u.getPasswordHash();
-        this.active = u.isActive();
         this.firstName = u.getFirstName();
         this.lastName = u.getLastName();
-        this.creationDate = null;
-        this.lastAccessDate = null;
     }
 
     public String getEmail() {
@@ -35,14 +27,14 @@ public class UpdateReqDTO {
 
 
 
-    public long getUserId() {
-        return userId;
+    public long getUserID() {
+        return userID;
     }
 
 
 
-    public void setUserId(long userId) {
-        this.userId = userId;
+    public void setUserID(long userID) {
+        this.userID = userID;
     }
 
 
@@ -55,18 +47,6 @@ public class UpdateReqDTO {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-
-
-    public boolean isActive() {
-        return active;
-    }
-
-
-
-    public void setActive(boolean active) {
-        this.active = active;
     }
 
 
@@ -91,22 +71,6 @@ public class UpdateReqDTO {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public LocalDate getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(LocalDate creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public LocalDate getLastAccessDate() {
-        return lastAccessDate;
-    }
-
-    public void setLastAccessDate(LocalDate lastAccessDate) {
-        this.lastAccessDate = lastAccessDate;
     }
 
     

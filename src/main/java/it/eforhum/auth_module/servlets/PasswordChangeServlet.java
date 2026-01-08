@@ -58,9 +58,15 @@ public class PasswordChangeServlet extends HttpServlet{
                 logger.log(Level.SEVERE, format("MESSED UP BIG TIME. User not found for email extracted from token during password change: %s", email));
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
+        }        
+
+        if(! userDAO.changePassword(u, passwordChangeDTO.newPassword())){
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            if(logger.isLoggable(Level.SEVERE))
+                logger.log(Level.SEVERE, format("Failed to change password for user: %s", u.getEmail()));
+            return;
         }
 
-        userDAO.changePassword(u, passwordChangeDTO.newPassword());
         resp.setStatus(HttpServletResponse.SC_OK);
         if(logger.isLoggable(Level.INFO))
             logger.log(Level.INFO, format("Password changed successfully for user: %s", u.getEmail()));

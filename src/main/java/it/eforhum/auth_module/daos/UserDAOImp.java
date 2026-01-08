@@ -17,12 +17,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import it.eforhum.auth_module.entities.User;
-import it.eforhum.auth_module.utils.PasswordHash;
+import it.eforhum.auth_module.dtos.ActivationReqDTO;
 import it.eforhum.auth_module.dtos.LoginReqDTO;
 import it.eforhum.auth_module.dtos.RegistrationReqDTO;
 import it.eforhum.auth_module.dtos.UpdateReqDTO;
-import it.eforhum.auth_module.dtos.ActivationReqDTO;
+import it.eforhum.auth_module.entities.User;
+import it.eforhum.auth_module.utils.PasswordHash;
 
 
 public class UserDAOImp implements UserDAO {
@@ -67,7 +67,7 @@ public class UserDAOImp implements UserDAO {
         Builder request;
         HttpResponse<String> response;
 
-         request = createBaseRequest();
+        request = createBaseRequest();
         try{
             request.POST(
                 HttpRequest.BodyPublishers.ofString(
@@ -135,8 +135,8 @@ public class UserDAOImp implements UserDAO {
     public boolean changePassword(User u, String newPassword){
         Builder request;
         HttpResponse<String> response;
-        u.setPasswordHash(PasswordHash.crypt(newPassword));
         UpdateReqDTO updateReqDTO = new UpdateReqDTO(u);
+        updateReqDTO.setPassword(PasswordHash.crypt(newPassword));
 
         request = createBaseRequest();
 
@@ -152,7 +152,19 @@ public class UserDAOImp implements UserDAO {
          
         response = sendRequest(format("%s/api/user/update", BACKOFFICE_SERVICE_URL), request);
 
-        return response != null && response.statusCode() == 200;
+        if(response == null){
+            if(logger.isLoggable(Level.SEVERE))
+                logger.log(Level.SEVERE, format("No response received when changing password for user: %s", u.getEmail()));
+            return false;
+        }
+
+        if(response.statusCode() != 200){
+            if(logger.isLoggable(Level.SEVERE))
+                logger.log(Level.SEVERE, format("Failed to change password for user: %s, status code: %d", u.getEmail(), response.statusCode()));
+            return false;
+        }
+
+        return true;
     }
 
     @Override
