@@ -94,7 +94,7 @@ public class UserDaoTest {
 
         request.DELETE();
 
-        response = sendRequest(format("%s/api/user/delete?email=%s", backofficeURL, email), request);
+        response = sendRequest(format("%s/api/user/delete/email/%s", backofficeURL, email), request);
 
         if (response == null || response.statusCode() != 200) {
             System.err.println("Failed to delete user during cleanup: " + email);
