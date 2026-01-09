@@ -36,7 +36,7 @@ public class GroupsCheckServlet extends HttpServlet{
 	throws ServletException{
 
         String[] groupsToCheck;
-        List<String> groups;
+        String[] groups;
         boolean isInGroups = true;
         User user = checkTokenAndInputs(request);
         if(user == null) {
@@ -48,12 +48,12 @@ public class GroupsCheckServlet extends HttpServlet{
             return;
         }
        
-        groups = List.of(user.getGroupsForJWT());
+        groups = user.getGroupsForJWT();
         if(request.getParameter("g") == null) {
             response.setStatus(200);
             response.setContentType("application/json");
             try {
-                objectMapper.writeValue(response.getWriter(), new GroupsListRespDTO(groups.toArray(new String[0]))); 
+                objectMapper.writeValue(response.getWriter(), new GroupsListRespDTO(groups)); 
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "IOException while writing groups to response", e);
                 response.setStatus(500);
@@ -64,7 +64,7 @@ public class GroupsCheckServlet extends HttpServlet{
         groupsToCheck = request.getParameter("g").split(",");
 
         for(String g : groupsToCheck) {
-            if(g.isBlank() || !groups.contains(g)) {
+            if(g.isBlank() || !List.of(groups).contains(g)) {
                 isInGroups = false;
                 break;
             }

@@ -8,10 +8,10 @@ import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
-import org.junit.After;
+import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import it.eforhum.auth_module.daos.UserDAOImp;
@@ -22,12 +22,12 @@ import it.eforhum.auth_module.entities.User;
 public class UserDaoTest {
 
     private static final UserDAOImp userDao = new UserDAOImp();
-    private static final String backofficeURL = System.getenv("BACKOFFICE_URL");
+    private static final String BACKOFFICE_URL = System.getenv("BACKOFFICE_SERVICE_URL");
     private static final HttpClient httpClient = HttpClient.newHttpClient();
 
 
-    @Before
-    public void addUser() {
+    @BeforeClass
+    public static void setUp() {
         User u = userDao.create("a@a.a", "password123", "First", "Last");
         addUserToGroup();
         assertNotNull("User creation failed in setup", u);
@@ -82,39 +82,49 @@ public class UserDaoTest {
         assertEquals("Activating a non-existing user should return false", false, activated);
     }
 
-    @After
-    public void cleanUp() {
-       
+    @AfterClass
+    public static void cleanUp() {
+       deleteUserByEmail("a@a.a");
     }
 
-    //TODO
-    private void deleteUserByEmail(String email) {
+    private static void deleteUserByEmail(String email) {
         HttpRequest.Builder request = createBaseRequest();
         HttpResponse<String> response;
 
         request.DELETE();
 
-        response = sendRequest(format("%s/api/user/delete/email/%s", backofficeURL, email), request);
+        response = sendRequest(format("%s/api/user/delete/email/%s", BACKOFFICE_URL, email), request);
 
-        if (response == null || response.statusCode() != 200) {
+        if (response == null || response.statusCode() != 200 || userDao.getByEmail(email) != null) {
             System.err.println("Failed to delete user during cleanup: " + email);
         }
-
-      
     }
 
-    //TODO
-    private void addUserToGroup() {
-        // Implementation to add user to group via backoffice service
+
+    private static void addUserToGroup() {
+        HttpRequest.Builder request = createBaseRequest();
+        HttpResponse<String> response;
+        User u = userDao.getByEmail("a@a.a");
+        String requestBody = String.format("{\"userID\":\"%s\",\"groupID\":\"1\"}", u.getUserId());
+
+        request.POST(
+                HttpRequest.BodyPublishers.ofString(requestBody)
+        );
+
+        response = sendRequest(format("%s/api/user/addUserToGroup", BACKOFFICE_URL), request);
+
+        if (response == null || response.statusCode() != 200) {
+            System.err.println("Failed to add user to group during setup: a@a.a");
+        }
     }
 
-    private Builder createBaseRequest(){
+    private static Builder createBaseRequest(){
         return HttpRequest.newBuilder()
                 .header("Content-Type", "application/json")
                 .timeout(Duration.ofSeconds(200));
     }
 
-    private HttpResponse<String> sendRequest(String uri,Builder request){
+    private static HttpResponse<String> sendRequest(String uri,Builder request){
         HttpResponse<String> response;
 
         try{

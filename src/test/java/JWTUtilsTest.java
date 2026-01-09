@@ -24,7 +24,7 @@ public class JWTUtilsTest {
 	}
 	@Test
 	public void generateJWT_activeUser_shouldContainClaims() throws Exception {
-		List<String> groups = List.of("ADMIN","USER");
+		String[] groups = {"ADMIN","USER"};
 	    Token token = JWTUtils.generateJWT(testUser);
 		List<String> groupsJWT;
 		
@@ -40,9 +40,9 @@ public class JWTUtilsTest {
 		assertEquals(testUser.getLastName(), claims.get("lastName"));
 		assertEquals(testUser.getUserId(), (Long) ((Number)claims.get("userId")).longValue());
 		groupsJWT = (List<String>) claims.get("groups");
-		assertEquals(groups.size(), groupsJWT.size());
+		assertEquals(groups.length, groupsJWT.size());
 		for( String s : groupsJWT ){
-			assert(groups.contains(s));
+			assert(List.of(groups).contains(s));
 		}	
 		
 	}
