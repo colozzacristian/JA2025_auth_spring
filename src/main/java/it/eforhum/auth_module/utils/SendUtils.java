@@ -59,10 +59,10 @@ public class SendUtils {
                 <body>
                     <p>This is your account activation code</p>
                     <h1>%s</h1>
-                    <p>Insert this code at: <a href="http://188.40.183.188:4200/activate/authenticate">this page</a></p>
+                    <p>Insert this code at: <a href="%s/activate/authenticate">this page</a></p>
                 </body>
             </html>
-            """, token);
+            """, token, System.getenv("FRONTEND_SERVICE_URL"));
     }
 
 }   

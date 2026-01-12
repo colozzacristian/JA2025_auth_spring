@@ -14,8 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class CORSfilter implements Filter {
     
     private static final String[] ALLOWED_ORIGINS = {
-        "http://localhost:4200",
-        "http://127.0.0.1:4200"
+        "*"
     };
 
     @Override
