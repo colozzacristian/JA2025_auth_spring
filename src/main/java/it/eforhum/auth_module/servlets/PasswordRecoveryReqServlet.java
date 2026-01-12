@@ -115,10 +115,10 @@ public class PasswordRecoveryReqServlet extends HttpServlet{
                 <body>
                     <p>This is your password recovery code</p>
                     <h1>%s</h1>
-                    <p>Insert this code at: <a href="http://188.40.183.188:4200/recovery/authenticate">this page</a></p>
+                    <p>Insert this code at: <a href="%s/recovery/authenticate">this page</a></p>
                 </body>
             </html>
-            """, t);
+            """, t, System.getenv("FRONTEND_SERVICE_URL"));
     }
     
 }

@@ -3,6 +3,7 @@ package it.eforhum.auth_module.servlets;
 import java.io.IOException;
 
 import it.eforhum.auth_module.utils.JWTUtils;
+import it.eforhum.auth_module.utils.RateLimitingUtils;
 import it.eforhum.auth_module.utils.TokenStore;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -23,7 +24,8 @@ public class TokenValidationServlet extends HttpServlet{
         String authHeader = request.getHeader("Authorization");
 
         if(authHeader == null || !authHeader.startsWith("Bearer ")){
-            
+            if(! RateLimitingUtils.isWhitelisted(request.getRemoteAddr()))
+                RateLimitingUtils.recordFailedAttempt(request.getRemoteAddr());
             response.setStatus(401);
             return;
         }
@@ -36,6 +38,8 @@ public class TokenValidationServlet extends HttpServlet{
         }
         
         response.setStatus(401);
+        if(! RateLimitingUtils.isWhitelisted(request.getRemoteAddr()))
+            RateLimitingUtils.recordFailedAttempt(request.getRemoteAddr());
         
 
     }

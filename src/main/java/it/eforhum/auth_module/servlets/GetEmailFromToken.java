@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.eforhum.auth_module.dtos.EmailRespDTO;
 import it.eforhum.auth_module.utils.JWTUtils;
+import it.eforhum.auth_module.utils.RateLimitingUtils;
 import it.eforhum.auth_module.utils.TokenStore;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -32,6 +33,13 @@ public class GetEmailFromToken extends HttpServlet{
 
         if(authHeader == null || !authHeader.startsWith("Bearer ")){
             response.setStatus(401);
+            if (logger.isLoggable(Level.WARNING)) {
+                logger.warning("Missing or invalid Authorization header");
+            }
+
+            if( !RateLimitingUtils.isWhitelisted(request.getRemoteAddr()) )
+                RateLimitingUtils.recordFailedAttempt(request.getRemoteAddr());
+            
             return;
         }
 
@@ -50,8 +58,17 @@ public class GetEmailFromToken extends HttpServlet{
                 logger.log(Level.SEVERE, "IOException while writing email to response", e);
                 response.setStatus(500);
             }
-        }else{
-            response.setStatus(400);
+
+            return;
         }
+
+        response.setStatus(400);
+        
+        if (logger.isLoggable(Level.WARNING)) {
+            logger.warning("Invalid or expired JWT token");
+        }
+        
+        if( !RateLimitingUtils.isWhitelisted(request.getRemoteAddr()) )
+            RateLimitingUtils.recordFailedAttempt(request.getRemoteAddr());
     }
 }

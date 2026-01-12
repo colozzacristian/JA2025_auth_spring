@@ -105,7 +105,12 @@ public class User{
         if (groups == null) {
             return new String[0];
         }
-        return groups.toArray(new String[0]);
+        String[] groupsArray = new String[groups.size()];
+        int i = 0;
+        for (String string : groups) {
+            groupsArray[i++] = string;
+        }
+        return groupsArray;
     }
 
 }

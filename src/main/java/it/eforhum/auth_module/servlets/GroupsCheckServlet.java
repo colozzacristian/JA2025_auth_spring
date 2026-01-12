@@ -14,6 +14,7 @@ import it.eforhum.auth_module.dtos.GroupsListRespDTO;
 import it.eforhum.auth_module.dtos.InGroupsRespDTO;
 import it.eforhum.auth_module.entities.User;
 import it.eforhum.auth_module.utils.JWTUtils;
+import it.eforhum.auth_module.utils.RateLimitingUtils;
 import it.eforhum.auth_module.utils.TokenStore;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -35,19 +36,24 @@ public class GroupsCheckServlet extends HttpServlet{
 	throws ServletException{
 
         String[] groupsToCheck;
-        List<String> groups;
+        String[] groups;
         boolean isInGroups = true;
-        User user = checkTokenAndInputs(request, response);
+        User user = checkTokenAndInputs(request);
         if(user == null) {
+
+            if(!RateLimitingUtils.isWhitelisted(request.getRemoteAddr()) )
+                RateLimitingUtils.recordFailedAttempt(request.getRemoteAddr());
+            
+            response.setStatus(401);
             return;
         }
        
-        groups = List.of(user.getGroupsForJWT());
+        groups = user.getGroupsForJWT();
         if(request.getParameter("g") == null) {
             response.setStatus(200);
             response.setContentType("application/json");
             try {
-                objectMapper.writeValue(response.getWriter(), new GroupsListRespDTO(groups.toArray(new String[0]))); 
+                objectMapper.writeValue(response.getWriter(), new GroupsListRespDTO(groups)); 
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "IOException while writing groups to response", e);
                 response.setStatus(500);
@@ -58,24 +64,26 @@ public class GroupsCheckServlet extends HttpServlet{
         groupsToCheck = request.getParameter("g").split(",");
 
         for(String g : groupsToCheck) {
-            if(g.isBlank() || !groups.contains(g)) {
+            if(g.isBlank() || !List.of(groups).contains(g)) {
                 isInGroups = false;
                 break;
             }
             
         }
-        response.setStatus(200);
-        response.setContentType("application/json");
+        
         try {
             objectMapper.writeValue(response.getWriter(), new InGroupsRespDTO(isInGroups));
         } catch (IOException e) {
             logger.log(Level.SEVERE, "IOException while writing groups check result to response", e);
             response.setStatus(500);
         }
+
+        response.setStatus(200);
+        response.setContentType("application/json");
     }
 
 
-    private User checkTokenAndInputs(HttpServletRequest request, HttpServletResponse response) {
+    private User checkTokenAndInputs(HttpServletRequest request) {
         String jwtToken;
         String userEmail;
         User user;
@@ -84,14 +92,18 @@ public class GroupsCheckServlet extends HttpServlet{
         if (authHeader == null || !authHeader.startsWith("Bearer ") ) {
             if(logger.isLoggable(Level.WARNING))
                 logger.log(Level.WARNING, format("Missing or invalid Authorization header from IP: %s", request.getRemoteAddr()));
-            response.setStatus(401);
+            
+            if( !RateLimitingUtils.isWhitelisted(request.getRemoteAddr()) )
+                RateLimitingUtils.recordFailedAttempt(request.getRemoteAddr());
+            
+
+
             return null;
         }
         jwtToken = authHeader.substring(7);
         if (!JWTUtils.isTokenSignatureValid(jwtToken)) {
             if(logger.isLoggable(Level.WARNING))
                 logger.log(Level.WARNING, format("Invalid token signature from IP: %s", request.getRemoteAddr()));
-            response.setStatus(401);
             return null;
         }
 
@@ -100,13 +112,13 @@ public class GroupsCheckServlet extends HttpServlet{
         if (!tokenStore.getJwtTokens().isTokenValid(userEmail,jwtToken) ) {
             if(logger.isLoggable(Level.WARNING))
                 logger.log(Level.WARNING, format("Invalid or expired JWT token used from IP: %s", request.getRemoteAddr()));
-            response.setStatus(401);
+            
             return null;
         }
         if((user = userDAO.getByEmail(userEmail)) == null) {
             if(logger.isLoggable(Level.WARNING))
                 logger.log(Level.WARNING, format("No user found for email: %s from IP: %s", userEmail, request.getRemoteAddr()));
-            response.setStatus(401);
+            return null;
         }
         return user; 
     }
