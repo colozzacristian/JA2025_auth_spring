@@ -13,20 +13,20 @@ import java.time.Duration;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
-import it.eforhum.auth_module.repository.UserDAO;
 import it.eforhum.auth_module.entity.Token;
 import it.eforhum.auth_module.entity.User;
-import it.eforhum.auth_module.service.JWTUtils;
 import it.eforhum.auth_module.repository.TokenStore;
+import it.eforhum.auth_module.repository.UserDAO;
+import it.eforhum.auth_module.service.JWTUtils;
 
 
 
@@ -35,32 +35,28 @@ import it.eforhum.auth_module.repository.TokenStore;
 @AutoConfigureMockMvc
 public class GroupsCheckTest {
 
-    private final HttpClient httpClient = HttpClient.newHttpClient();
+    private static final HttpClient httpClient = HttpClient.newHttpClient();
 
-    private MockMvc mockMvc;
-    
-    private final TokenStore tokenStore;
-    private final String backofficeUrl;
-    private final JWTUtils jwtUtils;
-    private final UserDAO userDAO;
+    private static String[] expectedGroups;
+    private static Token jwtToken;
 
+    private static UserDAO userDAO;
+    private static JWTUtils jwtUtils;
+    private static TokenStore tokenStore;
+    private static MockMvc mockMvc;
+    private static String backofficeUrl;
 
-
-    private  String[] expectedGroups;
-    private Token jwtToken;
-
-
-
-    public GroupsCheckTest(UserDAO userDAO,@Value("${url.backoffice}") String backofficeUrl, MockMvc mockMvc, TokenStore tokenStore, JWTUtils jwtUtils) {
-        this.userDAO = userDAO;
-        this.backofficeUrl = backofficeUrl;    
-        this.tokenStore = tokenStore;
-        this.mockMvc = mockMvc;
-        this.jwtUtils = jwtUtils;
-    }
+   
 
     @BeforeClass
-    public void setUp() {
+    public static void setUp() {
+        GroupsCheckTestHelper helper = new GroupsCheckTestHelper();
+        userDAO = helper.userDAO;
+        jwtUtils = helper.jwtUtils;
+        tokenStore = helper.tokenStore;
+        mockMvc = helper.mockMvc;
+        backofficeUrl = helper.backofficeUrl;
+        
         userDAO.create("a@a.a", "pass", "first", "last");
         addUserToGroup();
         User user = userDAO.getByEmail("a@a.a");
@@ -108,11 +104,11 @@ public class GroupsCheckTest {
     }
 
      @AfterClass
-    public void cleanUp() {
+    public static void cleanUp() {
        deleteUserByEmail("a@a.a");
     }
 
-    private void deleteUserByEmail(String email) {
+    private static void deleteUserByEmail(String email) {
         HttpRequest.Builder request = createBaseRequest();
         HttpResponse<String> response;
 
@@ -126,7 +122,7 @@ public class GroupsCheckTest {
     }
 
 
-    private void addUserToGroup() {
+    private static void addUserToGroup() {
         HttpRequest.Builder request = createBaseRequest();
         HttpResponse<String> response;
         User u = userDAO.getByEmail("a@a.a");
@@ -143,13 +139,13 @@ public class GroupsCheckTest {
         }
     }
 
-    private Builder createBaseRequest(){
+    private static Builder createBaseRequest(){
         return HttpRequest.newBuilder()
                 .header("Content-Type", "application/json")
                 .timeout(Duration.ofSeconds(200));
     }
 
-    private HttpResponse<String> sendRequest(String uri,Builder request){
+    private static HttpResponse<String> sendRequest(String uri,Builder request){
         HttpResponse<String> response;
 
         try{
@@ -168,5 +164,26 @@ public class GroupsCheckTest {
         }
         return response;
     }
+
+}
+
+class GroupsCheckTestHelper {
+    
+    @Autowired
+    MockMvc mockMvc;
+    
+    @Autowired
+    TokenStore tokenStore;
+
+    @Value("${url.backoffice}")
+    String backofficeUrl;
+
+    @Autowired
+    JWTUtils jwtUtils;
+
+    @Autowired
+    UserDAO userDAO;
+
+
 
 }
