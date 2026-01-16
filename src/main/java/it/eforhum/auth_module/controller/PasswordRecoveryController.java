@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @RestController
 @Slf4j
-@RequestMapping("/recovery/")
+@RequestMapping("/recovery")
 public class PasswordRecoveryController {
 
     private final UserDAO userDAO;
@@ -60,7 +60,7 @@ public class PasswordRecoveryController {
         return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR).build();
     }
 
-    @PostMapping("recovery/auth")
+    @PostMapping("auth")
     public ResponseEntity<TempTokenRespDTO> passwordRecoveryAuth(@RequestBody RecoveryAuthReqDTO entity,HttpServletRequest req){
         
         if(!tokenStore.getOtpTokens().isTokenValid(entity.email(), entity.otp())){
@@ -83,7 +83,7 @@ public class PasswordRecoveryController {
         return ResponseEntity.ok(new TempTokenRespDTO(t.getTokenValue()));
     }
     
-    @PostMapping("password/change-password")
+    @PostMapping("/change-password")
     public ResponseEntity<Void> changePassword(@RequestBody PasswordChangeReqDTO passwordChangeDTO,HttpServletRequest req){ 
 
         if(!tokenStore.getRecoveryTokens().isTokenValid(passwordChangeDTO.token())){

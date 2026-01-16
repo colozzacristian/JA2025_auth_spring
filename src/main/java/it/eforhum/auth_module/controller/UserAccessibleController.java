@@ -103,7 +103,7 @@ public class UserAccessibleController {
         if( u!= null){
             if( u.isActive()) {
                 log.warn("Registration attempt with existing email: %s", email);
-                return ResponseEntity.status(413).build();
+                return ResponseEntity.status(400).build();
             }else{
                
                 log.warn("Registration attempt with inactive email: %s", email);
