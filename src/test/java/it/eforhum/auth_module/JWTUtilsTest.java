@@ -11,14 +11,19 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import it.eforhum.auth_module.entity.Token;
 import it.eforhum.auth_module.entity.User;
 import it.eforhum.auth_module.service.JWTUtils;
 
-
+@RunWith(SpringRunner.class)
+@SpringBootTest
 public class JWTUtilsTest {
 
 
@@ -28,8 +33,8 @@ public class JWTUtilsTest {
 		testUser.setGroups(Set.of("USER","ADMIN"));
 	}
 
-	@Value("${jwt.secret}")
-	private SecretKey secretKey;
+	@Value("${token.secret}")
+	private String secretKey;
 
 	@Autowired
 	private JWTUtils jwtUtils;
@@ -43,7 +48,7 @@ public class JWTUtilsTest {
 		
 		assertNotNull("Token should not be null", token);
 		
-		Claims claims = Jwts.parser().verifyWith(secretKey).build()
+		Claims claims = Jwts.parser().verifyWith(hmacShaKeyFor(secretKey.getBytes())).build()
                 .parseSignedClaims(token.getTokenValue())
                 .getPayload();
 

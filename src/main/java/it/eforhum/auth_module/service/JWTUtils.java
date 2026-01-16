@@ -65,4 +65,11 @@ public class JWTUtils {
             return false;
         }
     }
+
+    public Long getUserIdFromToken(String token) {
+        return Jwts.parser().verifyWith(secretKey).build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("userId", Long.class);
+    }
 }

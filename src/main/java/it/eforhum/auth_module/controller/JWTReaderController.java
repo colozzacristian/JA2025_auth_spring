@@ -127,6 +127,19 @@ public class JWTReaderController {
         
 
     }
+
+    @GetMapping("userid")
+    public ResponseEntity<Long> getUserIdFromToken(@RequestHeader("Authorization") String authHeader,HttpServletRequest request){
+        Long userId;
+
+        String jwtToken = checkTokenValidity(authHeader, request);
+        if(jwtToken != null) {
+            userId = jwtUtils.getUserIdFromToken(jwtToken);
+            return ResponseEntity.ok(userId);
+        }
+        
+        return ResponseEntity.status(401).build();
+    }
     
     
     
