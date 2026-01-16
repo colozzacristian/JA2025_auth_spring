@@ -16,8 +16,8 @@ public class OTPUtils {
     private final int otpLength;
     private static final SecureRandom random = new SecureRandom();
 
-    public OTPUtils(@Value("${otp.characters:0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz}") String otpChars,
-                    @Value("${otp.length:6}") int otpLength) {
+    public OTPUtils(@Value("${otp.characters}") String otpChars,
+                    @Value("${otp.length}") int otpLength) {
         this.otpChars = otpChars;
         this.otpLength = otpLength;
     }
