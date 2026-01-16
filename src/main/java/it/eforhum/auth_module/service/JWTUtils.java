@@ -22,8 +22,8 @@ public class JWTUtils {
     private final int tokenExpiration;
     private final SecretKey secretKey;
 
-    public JWTUtils(@Value("${jwt.expiration:3600}") int tokenExpiration,
-                    @Value("${JWT_SECRET}") String jwtSecret) {
+    public JWTUtils(@Value("${token.expiration}") int tokenExpiration,
+                    @Value("${token.secret}") String jwtSecret) {
         this.tokenExpiration = tokenExpiration;
         this.secretKey = hmacShaKeyFor(jwtSecret.getBytes());
     }
