@@ -124,6 +124,8 @@ public class JWTReaderController {
                 if( !rateLimitingUtils.isWhitelisted(request.getRemoteAddr()) )
                     rateLimitingUtils.recordFailedAttempt(request.getRemoteAddr());
 
+                return null;
+
             }
 
         return jwtToken;

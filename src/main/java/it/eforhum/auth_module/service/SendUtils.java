@@ -81,7 +81,7 @@ public class SendUtils {
                 <body>
                     <p>This is your account activation code</p>
                     <h1>%s</h1>
-                    <p>Insert this code at: <a href="%s/activate/authenticate">this page</a></p>
+                    <p>Insert this code at the activation page, if you are not in it try to log in to your account and activate it from there.</p>
                 </body>
             </html>
             """, token, System.getenv("FRONTEND_SERVICE_URL"));
@@ -128,7 +128,7 @@ public class SendUtils {
                 <body>
                     <p>This is your password recovery code</p>
                     <h1>%s</h1>
-                    <p>Insert this code at: <a href="%s/recovery/authenticate">this page</a></p>
+                    <p>Insert this code in the recovery page</p>
                 </body>
             </html>
             """, t, System.getenv("FRONTEND_SERVICE_URL"));
