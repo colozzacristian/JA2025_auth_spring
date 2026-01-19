@@ -1,6 +1,5 @@
 package it.eforhum.auth_module.repository;
 
-import static java.lang.String.format;
 import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -39,7 +38,7 @@ public class TokenDAO {
         for (Token token : tokenMap.values()) {
             if (token.isExpired()) {
                 if(log.isInfoEnabled()){
-                    log.info(format("Purging expired token for user: %s", token.getUser().getEmail()));
+                    log.info("Purging expired token for user: {}", token.getUser().getEmail());
                 }
                 tokenMap    .remove(token.getUser().getEmail());
             }
@@ -50,7 +49,7 @@ public class TokenDAO {
         Token token = tokenMap.get(email);
         if( token != null && token.getType().equals(Token.VALID_TYPES[0]) ){
             if( log.isInfoEnabled() ){
-                log.info(format("Extending expiry for token of user: %s", email));
+                log.info("Extending expiry for token of user: {}", email);
             }
             token.extendExpiry(tokenExpirySeconds); 
         }

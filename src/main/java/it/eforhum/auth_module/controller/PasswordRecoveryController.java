@@ -51,12 +51,12 @@ public class PasswordRecoveryController {
 
         if(status == 200) {
           
-            log.info("Sent recovery message to user: %s", u.getEmail());
+            log.info("Sent recovery message to user: {}", u.getEmail());
             return ResponseEntity.ok().build();
         }
 
        
-        log.error("Failed to send recovery message, status code: %s", status);
+        log.error("Failed to send recovery message, status code: {}", status);
         return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR).build();
     }
 
@@ -65,21 +65,21 @@ public class PasswordRecoveryController {
         
         if(!tokenStore.getOtpTokens().isTokenValid(entity.email(), entity.otp())){
             
-            log.warn("Invalid or expired OTP used from IP: %s", req.getRemoteAddr());
+            log.warn("Invalid or expired OTP used from IP: {}", req.getRemoteAddr());
             rateLimitingUtils.recordFailedAttempt(req.getRemoteAddr());
             return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).build();
         }
 
         User u = userDAO.getByEmail(entity.email());
         if(u == null ){
-            log.error("MESSED UP BIG TIME. User not found for email during recovery auth: %s", entity.email());
+            log.error("MESSED UP BIG TIME. User not found for email during recovery auth: {}", entity.email());
             return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR).build();
         }
 
         Token t = jwtUtils.generateJWT(u);
         tokenStore.getRecoveryTokens().saveToken(t);
        
-        log.info("Issued temporary JWT for password recovery to user: %s", u.getEmail());
+        log.info("Issued temporary JWT for password recovery to user: {}", u.getEmail());
         return ResponseEntity.ok(new TempTokenRespDTO(t.getTokenValue()));
     }
     
@@ -88,7 +88,7 @@ public class PasswordRecoveryController {
 
         if(!tokenStore.getRecoveryTokens().isTokenValid(passwordChangeDTO.token())){
             
-            log.warn("Invalid or expired recovery token used from IP: %s", req.getRemoteAddr());
+            log.warn("Invalid or expired recovery token used from IP: {}", req.getRemoteAddr());
             rateLimitingUtils.recordFailedAttempt(req.getRemoteAddr());
             return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).build();
         }
@@ -98,17 +98,17 @@ public class PasswordRecoveryController {
         String email = jwtUtils.getEmailFromToken(passwordChangeDTO.token());
         User u = userDAO.getByEmail(email);
         if(u == null){
-            log.error("MESSED UP BIG TIME. User not found for email extracted from token during password change: %s", email);
+            log.error("MESSED UP BIG TIME. User not found for email extracted from token during password change: {}", email);
             return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).build();
         }        
 
         if(! userDAO.changePassword(u, passwordChangeDTO.newPassword())){
             
-            log.error("Failed to change password for user: %s", u.getEmail());
+            log.error("Failed to change password for user: {}", u.getEmail());
             return ResponseEntity.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR).build();
         }
 
-        log.info("Password changed successfully for user: %s", u.getEmail());
+        log.info("Password changed successfully for user: {}", u.getEmail());
         
         return ResponseEntity.ok().build();
     }

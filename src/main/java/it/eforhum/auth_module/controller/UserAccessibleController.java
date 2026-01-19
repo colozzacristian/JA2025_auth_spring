@@ -50,25 +50,25 @@ public class UserAccessibleController {
         User u = userDAO.login(email, loginDTO.password());
 
         if(u == null){
-            log.warn("Failed login attempt for email: %s from IP: %s", email, request.getRemoteAddr());
+            log.warn("Failed login attempt for email: {} from IP: {}", email, request.getRemoteAddr());
             rateLimitingUtils.recordFailedAttempt(request.getRemoteAddr());
             return ResponseEntity.status(401).build();
         }
         
         if(!u.isActive()){
-            log.warn("Login attempt for inactive user: %s from IP: %s", email, request.getRemoteAddr());
+            log.warn("Login attempt for inactive user: {} from IP: {}", email, request.getRemoteAddr());
             return ResponseEntity.status(403).build();
         }
         
         Token t = jwtUtils.generateJWT(u);
         if (tokenStore.getJwtTokens().isTokenValid(email)) {
-            log.info("Invalidating previous token for email: %s from IP: %s", email, request.getRemoteAddr());
+            log.info("Invalidating previous token for email: {} from IP: {}", email, request.getRemoteAddr());
             tokenStore.getJwtTokens().invalidateToken(email);
         }
 
         tokenStore.getJwtTokens().saveToken(t);
        
-        log.info("generated token for email: %s from IP: %s", email, request.getRemoteAddr());
+        log.info("generated token for email: {} from IP: {}", email, request.getRemoteAddr());
 
         return ResponseEntity.ok(new JWTRespDTO(t.getTokenValue()));
     }
@@ -102,18 +102,18 @@ public class UserAccessibleController {
 
         if( u!= null){
             if( u.isActive()) {
-                log.warn("Registration attempt with existing email: %s", email);
+                log.warn("Registration attempt with existing email: {}", email);
                 return ResponseEntity.status(400).build();
             }else{
                
-                log.warn("Registration attempt with inactive email: %s", email);
+                log.warn("Registration attempt with inactive email: {}", email);
                 return ResponseEntity.status(403).build();
             }
         }
 
         if( userDAO.getByEmail(email) != null){
             
-            log.warn("Registration attempt with existing email: %s", email);
+            log.warn("Registration attempt with existing email: {}", email);
             rateLimitingUtils.recordFailedAttempt(request.getRemoteAddr());
             return ResponseEntity.status(400).build();
         }
@@ -122,7 +122,7 @@ public class UserAccessibleController {
         u = userDAO.create(email, password, name, surname);
 
         if(u == null){
-            log.warn("Failed to create user during registration for email: %s", email);
+            log.warn("Failed to create user during registration for email: {}", email);
             return ResponseEntity.status(400).build();
         }
         
@@ -131,7 +131,7 @@ public class UserAccessibleController {
             return ResponseEntity.ok().build();
         }            
     
-        log.error("Failed to send OTP token after registration for email: %s", email);
+        log.error("Failed to send OTP token after registration for email: {}", email);
         return ResponseEntity.status(400).build();
         
     }
