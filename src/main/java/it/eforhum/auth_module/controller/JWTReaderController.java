@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -100,7 +101,10 @@ public class JWTReaderController {
 
 
     private String checkTokenValidity(String authHeader, HttpServletRequest request) {
-        if(authHeader == null || !authHeader.startsWith("Bearer ")){
+
+        authHeader = authHeader.trim();
+
+        if(authHeader == null || !authHeader.regionMatches(true,0, "bearer ", 0, 7) ){
     
             log.warn("Missing or invalid Authorization header");
             

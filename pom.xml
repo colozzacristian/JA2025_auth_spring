@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>it.eforhum</groupId>
 	<artifactId>auth_module</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.1</version>
 	<name>auth_module</name>
 	<description>auth module service for project work</description>
 	<url/>
