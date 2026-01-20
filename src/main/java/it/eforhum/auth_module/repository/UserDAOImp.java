@@ -54,6 +54,7 @@ public class UserDAOImp implements UserDAO {
         response = sendRequest(format("%s/api/user/get/email/%s", backofficeUrl, email), request);
 
         if (response == null || response.statusCode() != 200) {
+            log.warn("Failed to get user by email: {}, status code: {}", email, response != null ? response.statusCode() : "no response");
             return null;
         }
         
@@ -88,6 +89,7 @@ public class UserDAOImp implements UserDAO {
         response = sendRequest(format("%s/api/user/login", backofficeUrl), request);
 
         if (response == null || response.statusCode() != 200) {
+            log.warn("Failed to login: {}, status code: {}", email, response != null ? response.statusCode() : "no response");
             return null;
         }
         
@@ -124,6 +126,7 @@ public class UserDAOImp implements UserDAO {
         response = sendRequest(format("%s/api/user/create", backofficeUrl), request);
 
         if (response == null || response.statusCode() != 201) {
+            log.error("Failed to create user: {}, status code: {}", email, response != null ? response.statusCode() : "no response");
             return null;
         }
         
@@ -159,14 +162,12 @@ public class UserDAOImp implements UserDAO {
         response = sendRequest(format("%s/api/user/update", backofficeUrl), request);
 
         if(response == null){
-            if(log.isErrorEnabled())
-                log.error(format("No response received when changing password for user: %s", u.getEmail()));
+                log.error("No response received when changing password for user: {}", u.getEmail());
             return false;
         }
 
         if(response.statusCode() != 200){
-            if(log.isErrorEnabled())
-                log.error(format("Failed to change password for user: %s, status code: %d", u.getEmail(), response.statusCode()));
+                log.error("Failed to change password for user: {}, status code: {}", u.getEmail(), response.statusCode());
             return false;
         }
 
@@ -197,14 +198,12 @@ public class UserDAOImp implements UserDAO {
         response = sendRequest(format("%s/api/user/setActive", backofficeUrl), request);
 
         if(response == null){
-            if(log.isErrorEnabled())
-                log.error(  format("No response received when activating user: %s", u.getEmail()));
+            log.error("No response received when activating user: {}", u.getEmail());
             return false;
         }
 
         if(response.statusCode() != 200){
-            if(log.isErrorEnabled())
-                log.error(format("Failed to activate user: %s, status code: %d", u.getEmail(), response.statusCode()));
+            log.error("Failed to activate user: {}, status code: {}", u.getEmail(), response.statusCode())  ;
             return false;
         }
 
@@ -230,7 +229,7 @@ public class UserDAOImp implements UserDAO {
             log.error("HTTP request interrupted", e);
             return null;
         }catch (URISyntaxException e){
-            log.error(format("Invalid URI syntax: %s", uri), e);
+            log.error("Invalid URI syntax: {}", uri, e);
             return null;
         } catch (IOException e){
             log.error("Error sending HTTP request", e);
